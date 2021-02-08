@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <ctime>
+#include <cstdio>
 #include <string>
 using namespace std;
 int main();
@@ -24,15 +25,20 @@ public:
 };
 
 // Get the date and time
-string getCurrentDateTime()
-{
-    time_t tt;
-    struct tm *st;
+std::string getCurrentDateTime() {
+    std::time_t _time;
+    std::tm* timeinfo;
+    char time[80];
 
-    tt = time(NULL);
-    st = localtime(&tt);
-    return asctime(st);
+    std::time(&_time); // get time -> store in address
+    timeinfo = std::localtime(&_time); // address to struct rep
+
+    std::strftime(time, 80 ,"%m-%d-%Y", timeinfo); // format time to `time`
+    
+    std::string __time(time); // convert char[] -> std::string
+    return __time;
 }
+  
 
 
 
@@ -66,7 +72,7 @@ void findEntry() {
     ifstream database("database");
     string line{};
     string find{};
-            cout << "Enter the a keyword to search for (date[Jan 01], type, etc): ";
+            cout << "Enter the a keyword to search for (date[02-21-2021], type, etc): ";
             getline(cin, find);
             int ns{};
             cout << "How many occurances do you want [#]: " << endl;
@@ -97,35 +103,60 @@ void viewEntry() {
         }
 }
 
-// DO NOT USE, BROKEN, DELETES THE WHOLE FILE
+
+void eraseFileLine(std::string path, std::string eraseLine) {
+    std::string line;
+    std::ifstream fin;
+    
+    fin.open(path);
+    // contents of path must be copied to a temp file then
+    // renamed back to the path file
+    std::ofstream temp;
+    temp.open("temp.txt");
+
+    while (getline(fin, line)) {
+        // write all lines to temp other than the line marked for erasing
+        if (line != eraseLine)
+            temp << line << std::endl;
+    }
+
+    temp.close();
+    fin.close();
+
+    // required conversion for remove and rename functions
+    const char * p = path.c_str();
+    remove(p);
+    rename("temp.txt", p);
+}
+
+
+
+
+// Deletes a specific entry
 void removeEntry() {
-    fstream outputFile("outputFileName", std::fstream::in | std::fstream::out | std::fstream::app);
-    fstream database("database", std::fstream::in | std::fstream::out | std::fstream::app);
-    string line{};
-    string find{};
-    cout << "Search for the entry you want to remove (type, category, amount, date [Jan 01]): ";
+    ofstream outputFile("outputFileName");
+    ifstream database("database");
+    string line;
+    string find;
+    string var;
+    cout << "Search for the entry you want to remove (type, category, amount, date [02-21-2021]): ";
     cin.ignore(256, '\n');
     getline(cin, find);
+
     while(getline(database, line)){
-                if(line.find(find) != string::npos) {
-                    cout << line << endl;
-            }   
+        if(line.find(find) != string::npos) {
+            var = line;
+            cout << line << endl;
+            string choice{};
+            cout << "Is this the line you want to delete[y/n]: ";
+            cin >> choice; 
+            if (choice =="y")
+            {
+                eraseFileLine("database", var);
+            } else {
+                continue;
             }
-    std::string choice{};
-    cout << "Is this the line you want to delete[y/n]: ";
-    cin >> choice;
-    if(choice == "n") {
-        removeEntry();
-    } else {
-        while(getline(database, line)){
-                if(line == find) {
-                    outputFile << line << endl;
-            }   
-            }
-        database.close();
-        outputFile.close();
-        remove("database");
-        rename("outputFileName","database"); 
+        } 
     }
 }
 
@@ -166,7 +197,7 @@ void addEntry() {
     cout << "Amount: \n" << "$ ";
     cin >> entry.amount;
 // Sets the date and time
-    entry.date = getCurrentDateTime();
+    entry.date = getCurrentDateTime() + '\n';
 // Add function to check if the database is empty, if so take out the first "\n", if it is not empty leave it in
     outputFile << entry.type << ", " << entry.category << ", " << "$" << entry.amount << ", " << entry.date;
     outputFile << inputFile.rdbuf();
@@ -176,7 +207,6 @@ void addEntry() {
     rename("outputFileName","database");
     
 }
-
 
 // Show option menu and run the above functions
 int main()
