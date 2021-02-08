@@ -10,11 +10,11 @@ int main();
 class Entry
 {
 public:
-    string type{};
-    string category{};
-    double amount{};
-    string date{};
-    string description{};
+    string type;
+    string category;
+    double amount;
+    string date;
+    string description;
 // Set the value (not currently used)
     void setType(string value) { value = type; }
     void setCategory(string value) { value = category; }
@@ -70,11 +70,11 @@ std::string getCurrentDateTime() {
 
 void findEntry() {
     ifstream database("database");
-    string line{};
-    string find{};
+    string line;
+    string find;
             cout << "Enter the a keyword to search for (date[02-21-2021], type, etc): ";
             getline(cin, find);
-            int ns{};
+            int ns;
             cout << "How many occurances do you want [#]: " << endl;
             cin >> ns;
             int n {0};
@@ -88,7 +88,7 @@ void findEntry() {
 
 // Get an entry from the date that the user enters
 void viewEntry() {
-    string choice{};
+    string choice;
     cout << "Would you like to see all entries or a specific entry? [all/specific]" << endl;
     cin.ignore(256, '\n');
     getline(cin, choice);
@@ -174,8 +174,8 @@ void createDatabase() {
 // Add and entry to an already existing database
 void addEntry() {
     Entry entry;
-    fstream outputFile("outputFileName", std::fstream::in | std::fstream::out | std::fstream::app);
-    fstream inputFile("database", std::fstream::in | std::fstream::out | std::fstream::app);
+    ofstream outputFile("outputFileName");
+    ifstream inputFile("database");
     
 // Check for error
     if (outputFile.fail())
@@ -215,9 +215,7 @@ int main()
     cout << "1: Add an Entry" << endl;
     cout << "2: Remove an Entry" << endl;
     cout << "3: View an Entry" << endl;
-    cout << "4: Edit an Entry" << endl;
-    cout << "5: Create a Database" << endl;
-    int choice{};
+    int choice;
     cin >> choice;
     switch (choice)
     {
@@ -231,9 +229,6 @@ int main()
             viewEntry();
             break;
         case 4:
-            //editEntry();
-            break;
-        case 5:
             createDatabase();
             break;
         default:
