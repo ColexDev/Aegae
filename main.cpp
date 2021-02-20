@@ -3,27 +3,36 @@
 #include <ctime>
 #include <cstdio>
 #include <string>
+#include <ncurses.h>
+#include <curses.h>
+#include <string.h>
 using namespace std;
 int main();
-
+static int choice;
+static int highlight = 0;
+// Add ability for users to add to Category choices (will need to use vectors)
+static string choicesMain[4] = {"Add an Entry", "Remove an Entry", "View an Entry", "Create a Database"};
+static string choicesType[2] = {"Expense", "Income"};
+static string choicesCategoryExpense[4] = {"Food", "Transportation", "Entertainment", "Other"};
+static string choicesCategoryIncome[3] = {"Salary", "Sale", "Other"};
 //Entry class for storing temp values
 class Entry
 {
 public:
     string type;
     string category;
-    double amount;
+    string amount;
     string date;
     string description;
 // Set the value (not currently used)
     void setType(string value) { value = type; }
     void setCategory(string value) { value = category; }
-    void setAmount(double value) { value = amount; }
+    void setAmount(string value) { value = amount; }
     void setDate(string value) { value = date; }
     void setDescription(string value) { value = description; }
-     
+	       	     
 };
-
+Entry entry;
 // Get the date and time
 std::string getCurrentDateTime() {
     std::time_t _time;
@@ -66,7 +75,40 @@ std::string getCurrentDateTime() {
     database.close();
 }*/
 
-// ADD A FEATURE TO SHOW THE TOTAL SPEND IN A CERTAIN TIME FRAME.
+// ADD A FEATURE TO SHOW THE TOTAL SPENDING IN A CERTAIN TIME FRAME.
+
+void clearRefresh() {
+
+    wclear(stdscr);
+    wrefresh(stdscr);
+
+}
+
+
+void menuInitilization(int numChoices, string arrChoice[], int height = 2){
+    for(int i = 0; i < numChoices; i++)
+    {
+        if(i == highlight)
+            wattron(stdscr, A_REVERSE);
+        mvwprintw(stdscr, i+height, 1, arrChoice[i].c_str());
+        wattroff(stdscr, A_REVERSE);
+    }
+    choice = wgetch(stdscr);
+    switch(choice)
+    {
+        case 107:
+            highlight--;
+            if (highlight == -1)
+                highlight = 0;
+                break;
+        case 106:
+            highlight++;
+            if (highlight == numChoices)
+                highlight = numChoices - 1;
+                break;
+    }
+}
+
 
 void findEntry() {
     ifstream database("database");
@@ -83,7 +125,7 @@ void findEntry() {
                     n++;
                     cout << line << endl;
             }   
-            }
+         }
 }
 
 // Get an entry from the date that the user enters
@@ -103,7 +145,7 @@ void viewEntry() {
         }
 }
 
-
+// Copied from stack overflow, its function is self-explanatory. 
 void eraseFileLine(std::string path, std::string eraseLine) {
     std::string line;
     std::ifstream fin;
@@ -171,8 +213,8 @@ void createDatabase() {
     main();
 
 }
-// Add and entry to an already existing database
-void addEntry() {
+// Add an entry to an already existing database
+/*void addEntry() {
     Entry entry;
     ofstream outputFile("outputFileName");
     ifstream inputFile("database");
@@ -184,8 +226,8 @@ void addEntry() {
         exit(1);
     }
 // Determines type 
-    cout << "Expense or Income?: " << endl;
-    cin >> entry.type;
+    mvwprintw(stdscr, 1, 1, "Expense");
+    mvwprintw(stdscr, 1, 1, "Income");
     if(entry.type == "Expense") {
         cout << "What was it spent on? (Food, Transportation, etc.): " << endl;
         cin >> entry.category;
@@ -207,32 +249,142 @@ void addEntry() {
     rename("outputFileName","database");
     
 }
+*/
 
-// Show option menu and run the above functions
+void getSetAmount() {
+    ofstream outputFile("outputFileName");
+    ifstream inputFile("database");
+    char mesg[]="Enter the Amount: ";
+    char str[80];
+    echo();
+    mvprintw(0, 0, "%s", mesg);
+    getstr(str);
+    entry.amount = str;
+    noecho();
+    // Sets the date and time
+    entry.date = getCurrentDateTime() + '\n';
+    // Writes to file
+    outputFile << entry.type << ", " << entry.category << ", " << "$" << entry.amount << ", " << entry.date;
+    outputFile << inputFile.rdbuf();
+    inputFile.close();
+    outputFile.close();
+    remove("database");
+    rename("outputFileName","database");
+    
+}
+// Make 1 settype function with parameters to choose if its income or expense
+void setTypeIncome() {
+    highlight = 0;
+    entry.type = "Income";
+    while(true){
+        clearRefresh();
+        mvwprintw(stdscr, 0, 1, "What was it from ");
+        menuInitilization(3, choicesCategoryIncome); 
+        if (choice == 113 || choice == 104) {
+            clearRefresh();
+            break;
+        } else if (choice == 108) {
+            if (choicesCategoryIncome[highlight] == "Salary") {
+                entry.category = "Salary";
+            } else if (choicesCategoryIncome[highlight] == "Sale") {
+                entry.category = "Sale";
+            } else if (choicesCategoryIncome[highlight] == "Other") {
+                entry.category = "Other";
+            }
+            clearRefresh();
+            getSetAmount();
+            break;
+        }
+    }
+    clearRefresh();
+    mvwprintw(stdscr, 0, 1, "Your entry has been submitted to the database!");
+}
+
+void setTypeExpense() {
+    highlight = 0;
+    entry.type = "Expense";
+    while(true) {  
+        clearRefresh();
+        mvwprintw(stdscr, 0, 1, "What was it spent on: ");
+        menuInitilization(4, choicesCategoryExpense); 
+        if (choice == 113 || choice == 104) {
+            clearRefresh();
+            break;
+        } else if (choice == 108) {
+            if (choicesCategoryExpense[highlight] == "Food") {
+                entry.category = "Food";
+            } else if (choicesCategoryExpense[highlight] == "Transportation") {
+                entry.category = "Transportation";
+            } else if (choicesCategoryExpense[highlight] == "Entertainment") {
+                entry.category = "Entertainment";
+            } else if (choicesCategoryExpense[highlight] == "Other") {
+                entry.category = "Other";
+            }
+            clearRefresh();
+            getSetAmount();
+            break;
+        }
+    }
+    clearRefresh();
+    mvwprintw(stdscr, 0, 1, "Your entry has been submitted to the database!");
+}
+// Add ability for user to add a description
+void addEntry() {
+while(true)
+{
+    mvwprintw(stdscr, 0, 1, "Please Select the Category: ");
+    menuInitilization(2, choicesType);
+        if (choice == 108){
+           if(choicesType[highlight] == "Expense"){
+               setTypeExpense();
+            } else if (choicesType[highlight] == "Income"){
+                setTypeIncome();
+            }
+        } else if (choice == 113 || choice == 104) {
+            clearRefresh();
+            break;
+    }
+}
+// Determines Amount 
+ /*   cout << "Amount: \n" << "$ ";
+    cin >> entry.amount;
+// Sets the date and time
+    entry.date = getCurrentDateTime() + '\n';
+// Add function to check if the database is empty, if so take out the first "\n", if it is not empty leave it in
+    outputFile << entry.type << ", " << entry.category << ", " << "$" << entry.amount << ", " << entry.date;
+    outputFile << inputFile.rdbuf();
+    inputFile.close();
+    outputFile.close();
+    remove("database");
+    rename("outputFileName","database");
+   */ 
+}
+
+
+
 int main()
 {
-    cout << "Please Select and Option" << endl;
-    cout << "1: Add an Entry" << endl;
-    cout << "2: Remove an Entry" << endl;
-    cout << "3: View an Entry" << endl;
-    int choice;
-    cin >> choice;
-    switch (choice)
+initscr();
+cbreak();
+noecho();
+refresh();
+wrefresh(stdscr);
+keypad(stdscr, true);
+
+    while(true) 
     {
-        case 1:
-            addEntry();
+        curs_set(0);
+        mvwprintw(stdscr, 0, 1, "Please Select an Option: ");
+        menuInitilization(4, choicesMain);
+        if (choice == 108){
+            wclear(stdscr);
+            if(choicesMain[highlight] == "Add an Entry"){
+                clearRefresh();
+                addEntry();
+            }
+        } else if (choice == 113 || choice == 104) {
             break;
-        case 2:
-            removeEntry();
-            break;
-        case 3:
-            viewEntry();
-            break;
-        case 4:
-            createDatabase();
-            break;
-        default:
-            main();
-            break;
-    }    
+        }
+    }
+endwin();
 }
