@@ -15,6 +15,7 @@ static string choicesMain[4] = {"Add an Entry", "Remove an Entry", "View an Entr
 static string choicesType[2] = {"Expense", "Income"};
 static string choicesCategoryExpense[4] = {"Food", "Transportation", "Entertainment", "Other"};
 static string choicesCategoryIncome[3] = {"Salary", "Sale", "Other"};
+
 //Entry class for storing temp values
 class Entry
 {
@@ -33,6 +34,7 @@ public:
 	       	     
 };
 Entry entry;
+
 // Get the date and time
 std::string getCurrentDateTime() {
     std::time_t _time;
@@ -47,9 +49,6 @@ std::string getCurrentDateTime() {
     std::string __time(time); // convert char[] -> std::string
     return __time;
 }
-  
-
-
 
 // Get number of entries
 /*string listNumEntries()
@@ -84,7 +83,6 @@ void clearRefresh() {
 
 }
 
-
 void menuInitilization(int numChoices, string arrChoice[], int height = 2){
     for(int i = 0; i < numChoices; i++)
     {
@@ -108,7 +106,6 @@ void menuInitilization(int numChoices, string arrChoice[], int height = 2){
                 break;
     }
 }
-
 
 void findEntry() {
     ifstream database("database");
@@ -171,9 +168,6 @@ void eraseFileLine(std::string path, std::string eraseLine) {
     rename("temp.txt", p);
 }
 
-
-
-
 // Deletes a specific entry
 void removeEntry() {
     ofstream outputFile("outputFileName");
@@ -213,43 +207,6 @@ void createDatabase() {
     main();
 
 }
-// Add an entry to an already existing database
-/*void addEntry() {
-    Entry entry;
-    ofstream outputFile("outputFileName");
-    ifstream inputFile("database");
-    
-// Check for error
-    if (outputFile.fail())
-    {
-        cout << "Error Opening File" << endl;
-        exit(1);
-    }
-// Determines type 
-    mvwprintw(stdscr, 1, 1, "Expense");
-    mvwprintw(stdscr, 1, 1, "Income");
-    if(entry.type == "Expense") {
-        cout << "What was it spent on? (Food, Transportation, etc.): " << endl;
-        cin >> entry.category;
-    } else {
-        cout << "What was it from? (Salary, Sale, etc): " << endl;
-        cin >> entry.category;
-    }
-// Determines Amount 
-    cout << "Amount: \n" << "$ ";
-    cin >> entry.amount;
-// Sets the date and time
-    entry.date = getCurrentDateTime() + '\n';
-// Add function to check if the database is empty, if so take out the first "\n", if it is not empty leave it in
-    outputFile << entry.type << ", " << entry.category << ", " << "$" << entry.amount << ", " << entry.date;
-    outputFile << inputFile.rdbuf();
-    inputFile.close();
-    outputFile.close();
-    remove("database");
-    rename("outputFileName","database");
-    
-}
-*/
 
 void getSetAmount() {
     ofstream outputFile("outputFileName");
@@ -328,6 +285,7 @@ void setTypeExpense() {
     clearRefresh();
     mvwprintw(stdscr, 0, 1, "Your entry has been submitted to the database!");
 }
+
 // Add ability for user to add a description
 void addEntry() {
 while(true)
@@ -345,19 +303,6 @@ while(true)
             break;
     }
 }
-// Determines Amount 
- /*   cout << "Amount: \n" << "$ ";
-    cin >> entry.amount;
-// Sets the date and time
-    entry.date = getCurrentDateTime() + '\n';
-// Add function to check if the database is empty, if so take out the first "\n", if it is not empty leave it in
-    outputFile << entry.type << ", " << entry.category << ", " << "$" << entry.amount << ", " << entry.date;
-    outputFile << inputFile.rdbuf();
-    inputFile.close();
-    outputFile.close();
-    remove("database");
-    rename("outputFileName","database");
-   */ 
 }
 
 
