@@ -8,6 +8,7 @@
 #include <string.h>
 using namespace std;
 int main();
+void addEntry();
 static int choice;
 static int highlight = 0;
 // Add ability for users to add to Category choices (will need to use vectors)
@@ -30,8 +31,7 @@ public:
     void setCategory(string value) { value = category; }
     void setAmount(string value) { value = amount; }
     void setDate(string value) { value = date; }
-    void setDescription(string value) { value = description; }
-	       	     
+    void setDescription(string value) { value = description; }	     
 };
 Entry entry;
 
@@ -77,7 +77,6 @@ std::string getCurrentDateTime() {
 // ADD A FEATURE TO SHOW THE TOTAL SPENDING IN A CERTAIN TIME FRAME.
 
 void clearRefresh() {
-
     wclear(stdscr);
     wrefresh(stdscr);
 
@@ -173,22 +172,29 @@ void removeEntry() {
     ofstream outputFile("outputFileName");
     ifstream database("database");
     string line;
-    string find;
     string var;
-    cout << "Search for the entry you want to remove (type, category, amount, date [02-21-2021]): ";
-    cin.ignore(256, '\n');
-    getline(cin, find);
-
+    char mesg[]="Search for the entry you want to remove (type, category, amount, date [02-21-2021]): ";
+    char find[80];
+    echo();
+    mvprintw(0, 0, "%s", mesg);
+    getstr(find);
+    noecho();
     while(getline(database, line)){
         if(line.find(find) != string::npos) {
             var = line;
-            cout << line << endl;
-            string choice{};
-            cout << "Is this the line you want to delete[y/n]: ";
-            cin >> choice; 
-            if (choice =="y")
+            clearRefresh();
+            mvwprintw(stdscr, 2, 1, line.c_str());
+            int choice;
+            echo();
+            mvwprintw(stdscr, 0, 1, "Is this the line you want to delete[y/n]: ");
+            choice = getch();
+            noecho();
+            if (choice == 121)
             {
                 eraseFileLine("database", var);
+                main();
+                clearRefresh();
+                break;
             } else {
                 continue;
             }
@@ -227,9 +233,13 @@ void getSetAmount() {
     outputFile.close();
     remove("database");
     rename("outputFileName","database");
+    clearRefresh();
+    highlight = 0;
+    main();
     
 }
 // Make 1 settype function with parameters to choose if its income or expense
+// Also change from if statements to switch statements and enums
 void setTypeIncome() {
     highlight = 0;
     entry.type = "Income";
@@ -237,7 +247,7 @@ void setTypeIncome() {
         clearRefresh();
         mvwprintw(stdscr, 0, 1, "What was it from ");
         menuInitilization(3, choicesCategoryIncome); 
-        if (choice == 113 || choice == 104) {
+        if (choice == 113) {
             clearRefresh();
             break;
         } else if (choice == 108) {
@@ -249,10 +259,13 @@ void setTypeIncome() {
                 entry.category = "Other";
             }
             clearRefresh();
-            getSetAmount();
             break;
+        } else if (choice == 104) {
+            clearRefresh();
+            addEntry();
         }
     }
+    getSetAmount();
     clearRefresh();
     mvwprintw(stdscr, 0, 1, "Your entry has been submitted to the database!");
 }
@@ -264,7 +277,7 @@ void setTypeExpense() {
         clearRefresh();
         mvwprintw(stdscr, 0, 1, "What was it spent on: ");
         menuInitilization(4, choicesCategoryExpense); 
-        if (choice == 113 || choice == 104) {
+        if (choice == 113) {
             clearRefresh();
             break;
         } else if (choice == 108) {
@@ -278,58 +291,71 @@ void setTypeExpense() {
                 entry.category = "Other";
             }
             clearRefresh();
-            getSetAmount();
             break;
+        } else if (choice == 104) {
+            clearRefresh();
+            addEntry();
         }
     }
+    getSetAmount();
     clearRefresh();
     mvwprintw(stdscr, 0, 1, "Your entry has been submitted to the database!");
 }
 
 // Add ability for user to add a description
 void addEntry() {
-while(true)
-{
-    mvwprintw(stdscr, 0, 1, "Please Select the Category: ");
-    menuInitilization(2, choicesType);
-        if (choice == 108){
-           if(choicesType[highlight] == "Expense"){
-               setTypeExpense();
-            } else if (choicesType[highlight] == "Income"){
-                setTypeIncome();
+    highlight = 0;
+    while(true)
+    { 
+        mvwprintw(stdscr, 0, 1, "Please Select the Category: ");
+        menuInitilization(2, choicesType);
+            if (choice == 108){
+                clearRefresh();
+                break;
+            } else if (choice == 113 || choice == 104) {
+                main();
+                clearRefresh();
+                break;
+            } else {
+                continue;
             }
-        } else if (choice == 113 || choice == 104) {
-            clearRefresh();
-            break;
+    }
+    if(choicesType[highlight] == "Expense"){
+        setTypeExpense();
+    } else if (choicesType[highlight] == "Income"){
+        setTypeIncome();
     }
 }
-}
-
-
 
 int main()
 {
-initscr();
-cbreak();
-noecho();
-refresh();
-wrefresh(stdscr);
-keypad(stdscr, true);
+    clearRefresh();
+    highlight = 0;
+    initscr();
+    cbreak();
+    noecho();
+    refresh();
+    wrefresh(stdscr);
+    keypad(stdscr, true);
 
-    while(true) 
-    {
-        curs_set(0);
-        mvwprintw(stdscr, 0, 1, "Please Select an Option: ");
-        menuInitilization(4, choicesMain);
-        if (choice == 108){
-            wclear(stdscr);
-            if(choicesMain[highlight] == "Add an Entry"){
-                clearRefresh();
-                addEntry();
+        while(true) 
+        {
+            curs_set(0);
+            mvwprintw(stdscr, 0, 1, "Please Select an Option: ");
+            menuInitilization(4, choicesMain);
+            if (choice == 108){
+                wclear(stdscr);
+                if(choicesMain[highlight] == "Add an Entry"){
+                    clearRefresh();
+                    addEntry();
+                } else if (choicesMain[highlight] == "Remove an Entry"){
+                    clearRefresh();
+                    removeEntry();
+                }
+            // This does not work as addEntry calls main, run to test/for an explanation
+            } else if (choice == 113 || choice == 104) {
+                break;
             }
-        } else if (choice == 113 || choice == 104) {
-            break;
         }
+    endwin();
     }
-endwin();
-}
