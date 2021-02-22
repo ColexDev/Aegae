@@ -12,10 +12,11 @@ void addEntry();
 static int choice;
 static int highlight = 0;
 // Add ability for users to add to Category choices (will need to use vectors)
-static string choicesMain[4] = {"Add an Entry", "Remove an Entry", "View an Entry", "Create a Database"};
+static string choicesMain[4] = {"Add an Entry", "Remove an Entry", "View an Entry"};
 static string choicesType[2] = {"Expense", "Income"};
 static string choicesCategoryExpense[4] = {"Food", "Transportation", "Entertainment", "Other"};
 static string choicesCategoryIncome[3] = {"Salary", "Sale", "Other"};
+static string choicesViewEntry[2] = {"All", "Specific"};
 
 //Entry class for storing temp values
 class Entry
@@ -107,55 +108,76 @@ void menuInitilization(int numChoices, string arrChoice[], int height = 2){
 }
 
 void findEntry() {
+    clearRefresh();
     ifstream database("database");
     string line;
-    string find;
-            cout << "Enter the a keyword to search for (date[02-21-2021], type, etc): ";
-            getline(cin, find);
-            int ns;
-            cout << "How many occurances do you want [#]: " << endl;
-            cin >> ns;
-            int n {0};
-            while(getline(database, line) && n < ns){
-                if(line.find(find) != string::npos) {
-                    n++;
-                    cout << line << endl;
-            }   
-         }
+    char mesg[]="Enter the a keyword to search for (date[02-21-2021], type, etc): ";
+    char find[80];
+    echo();
+    mvprintw(0, 0, "%s", mesg);
+    getstr(find);
+    noecho();
+    int ns;
+    clearRefresh();
+    mvwprintw(stdscr, 0, 1, "How many occurances do you want [#, Enter = all]: ");
+    ns = getch();
+    int n {0};
+    while(getline(database, line) && n < ns){
+        if(line.find(find) != string::npos) {
+            n++;
+            mvwprintw(stdscr, n, 1, line.c_str());
+        }   
+    }
+    mvwprintw(stdscr, n+2, 1, "Press any key to continue...");
+    getch();
+    clearRefresh();
 }
 
 // Get an entry from the date that the user enters
 void viewEntry() {
-    string choice;
-    cout << "Would you like to see all entries or a specific entry? [all/specific]" << endl;
-    cin.ignore(256, '\n');
-    getline(cin, choice);
+    highlight = 0;
+    clearRefresh();
     string line{};
     ifstream database("database");
-        if(choice == "all"){
-            while(getline(database, line)){
-                cout << line << endl;
+    int n {0};
+    while(true) {
+        mvwprintw(stdscr, n, 1, "Which entries would you like to see: ");
+        menuInitilization(2, choicesViewEntry);
+        if(choice == 108){
+            if (choicesViewEntry[highlight] == "All") {
+                clearRefresh();
+                while(getline(database, line)){
+                    mvwprintw(stdscr, n, 1, line.c_str());
+                    n++;
+                }
+            mvwprintw(stdscr, n+2, 1, "Press any key to continue...");
+            getch();
+            clearRefresh();
+            break;
+            } else if (choicesViewEntry[highlight] == "Specific") {
+                findEntry();
+                break;
             }
-          } else if(choice == "specific") {
-            findEntry();
         }
+    }
+    main();
 }
 
 // Copied from stack overflow, its function is self-explanatory. 
-void eraseFileLine(std::string path, std::string eraseLine) {
-    std::string line;
-    std::ifstream fin;
+void eraseFileLine(string path, string eraseLine) {
+    string line;
+    ifstream fin;
     
     fin.open(path);
     // contents of path must be copied to a temp file then
     // renamed back to the path file
-    std::ofstream temp;
+    ofstream temp;
     temp.open("temp.txt");
 
     while (getline(fin, line)) {
         // write all lines to temp other than the line marked for erasing
         if (line != eraseLine)
-            temp << line << std::endl;
+            temp << line << endl;
     }
 
     temp.close();
@@ -200,18 +222,17 @@ void removeEntry() {
             }
         } 
     }
+    clearRefresh();
 }
 
 // Create a new database
+// NOT CURRENTLY IN USE
 void createDatabase() {
-    //string fileName{};
-    //cout << "What would you like to name your database?\n";
-    //cin >> fileName;
-    cout << "Your database has been created." << endl;
+    mvwprintw(stdscr, 0, 1, "Your database has been created.");
     ofstream database("database");
     database.close();
+    clearRefresh();
     main();
-
 }
 
 void getSetAmount() {
@@ -246,7 +267,7 @@ void setTypeIncome() {
     while(true){
         clearRefresh();
         mvwprintw(stdscr, 0, 1, "What was it from ");
-        menuInitilization(3, choicesCategoryIncome); 
+        menuInitilization(3, choicesCategoryIncome);
         if (choice == 113) {
             clearRefresh();
             break;
@@ -342,7 +363,7 @@ int main()
         {
             curs_set(0);
             mvwprintw(stdscr, 0, 1, "Please Select an Option: ");
-            menuInitilization(4, choicesMain);
+            menuInitilization(3, choicesMain);
             if (choice == 108){
                 wclear(stdscr);
                 if(choicesMain[highlight] == "Add an Entry"){
@@ -351,8 +372,10 @@ int main()
                 } else if (choicesMain[highlight] == "Remove an Entry"){
                     clearRefresh();
                     removeEntry();
+                } else if (choicesMain[highlight] == "View an Entry"){
+                    clearRefresh();
+                    viewEntry();
                 }
-            // This does not work as addEntry calls main, run to test/for an explanation
             } else if (choice == 113 || choice == 104) {
                 break;
             }
