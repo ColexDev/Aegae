@@ -117,15 +117,12 @@ void findEntry() {
     mvprintw(0, 0, "%s", mesg);
     getstr(find);
     noecho();
-    int ns;
     clearRefresh();
-    mvwprintw(stdscr, 0, 1, "How many occurances do you want [#, Enter = all]: ");
-    ns = getch();
     int n {0};
-    while(getline(database, line) && n < ns){
+    while(getline(database, line)){
         if(line.find(find) != string::npos) {
             n++;
-            mvwprintw(stdscr, n, 1, line.c_str());
+            mvwprintw(stdscr, n-1, 1, line.c_str());
         }   
     }
     mvwprintw(stdscr, n+2, 1, "Press any key to continue...");
