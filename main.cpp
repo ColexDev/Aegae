@@ -1,22 +1,28 @@
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <ctime>
 #include <cstdio>
 #include <string>
 #include <ncurses.h>
 #include <curses.h>
 #include <string.h>
-using namespace std;
+using std::string;
+using std::getline;
+
 int main();
+void menuInitilization(int numChoices, string arrChoice[], int height = 2);
 void addEntry();
 static int choice;
 static int highlight = 0;
+static string token;
 // Add ability for users to add to Category choices (will need to use vectors)
 static string choicesMain[4] = {"Add an Entry", "Remove an Entry", "View an Entry"};
 static string choicesType[2] = {"Expense", "Income"};
 static string choicesCategoryExpense[4] = {"Food", "Transportation", "Entertainment", "Other"};
 static string choicesCategoryIncome[3] = {"Salary", "Sale", "Other"};
 static string choicesViewEntry[2] = {"All", "Specific"};
+static string choicesTotalSpending[3] = {"Total Spending", "Total Income", "Money Left"};
 
 //Entry class for storing temp values
 class Entry
@@ -76,13 +82,108 @@ std::string getCurrentDateTime() {
 
 // ADD A FEATURE TO SHOW THE TOTAL SPENDING IN A CERTAIN TIME FRAME.
 
+// GETS THE MONTH OF A LINE (TEST2.CPP GETS THE AMOUNT OF A LINE)
+int getTimeFrame(string &line) {
+    string input {line};
+    std::istringstream ss(input);
+
+    while(getline(ss, token, ',')) {
+        std::cout << token << '\n';
+    }
+    std::istringstream ss2(token);
+    getline(ss2, token, '-' );
+    int month {stoi(token)};
+    return month;
+    // RETURNS THE MONTH (1, 2, 3, ETC)
+    //MAYBE ADD HERE? totalSpending(month);
+
+    /*switch(month) {
+        case 1:
+            //Jan
+        case 2:
+            //Feb
+        case 3:
+            //Mar
+        case 4:
+            //Apr
+        case 5:
+            //May
+        case 6:
+            //Jun
+        case 7:
+            //Jul
+        case 8:
+            //Aug
+        case 9:
+            //Sept
+        case 10:
+            //Oct
+        case 11:
+            //Nov
+        case 12:
+            //Dec
+    }*/
+    
+}
+
+double getAmount(string &line) {
+    // RETURNS THE AMOUNT, DOUBLE (15.65)
+    string input {line};
+    std::istringstream ss(input);
+    string amount;
+    getline(ss, amount, ',');
+    getline(ss, amount, ',');
+    getline(ss, amount, ',');
+    std::istringstream ssAmount(amount);
+    getline(ssAmount, amount, '$');
+    getline(ssAmount, amount, '$');
+    double numAmount {stod(amount)};
+    return numAmount;
+}
+
+string getType(string &line) {
+    string input {line};
+    string type;
+    std::istringstream ss(input);
+    getline(ss, type, ',');
+    return type;
+}
+
+void totalSpending(int &month) {
+    string line;
+    int date;
+    string type;
+    double amount;
+    std::ifstream database("database");
+    mvwprintw(stdscr, 0, 1, "Which would you like to see: ");
+    menuInitilization(3, choicesTotalSpending);
+    if (choicesTotalSpending[highlight] == "Total Spending") {
+        while(getline(database, line)) {
+            type = getType(line);
+            if (type == "Expense") {
+                amount = getAmount(line);
+            } else if (type == "Income") {
+                continue;
+            }
+            
+        }
+    } else if (choicesTotalSpending[highlight] == "Total Income") {
+
+    } else if (choicesTotalSpending[highlight] == "Money Left") {
+
+    }
+
+
+}
+
+
 void clearRefresh() {
     wclear(stdscr);
     wrefresh(stdscr);
 
 }
 
-void menuInitilization(int numChoices, string arrChoice[], int height = 2) {
+void menuInitilization(int numChoices, string arrChoice[], int height) {
     for(int i = 0; i < numChoices; i++) {
         if(i == highlight)
             wattron(stdscr, A_REVERSE);
@@ -106,7 +207,7 @@ void menuInitilization(int numChoices, string arrChoice[], int height = 2) {
 
 void findEntry() {
     clearRefresh();
-    ifstream database("database");
+    std::ifstream database("database");
     string line;
     char mesg[]="Enter the a keyword to search for (date[02-21-2021], type, etc): ";
     char find[80];
@@ -132,7 +233,7 @@ void viewEntry() {
     highlight = 0;
     clearRefresh();
     string line{};
-    ifstream database("database");
+    std::ifstream database("database");
     int n {0};
     while(true) {
         mvwprintw(stdscr, n, 1, "Which entries would you like to see: ");
@@ -160,18 +261,18 @@ void viewEntry() {
 // Copied from stack overflow, its function is self-explanatory. 
 void eraseFileLine(string path, string eraseLine) {
     string line;
-    ifstream fin;
+    std::ifstream fin;
     
     fin.open(path);
     // contents of path must be copied to a temp file then
     // renamed back to the path file
-    ofstream temp;
+    std::ofstream temp;
     temp.open("temp.txt");
 
     while (getline(fin, line)) {
         // write all lines to temp other than the line marked for erasing
         if (line != eraseLine)
-            temp << line << endl;
+            temp << line << std::endl;
     }
 
     temp.close();
@@ -185,8 +286,8 @@ void eraseFileLine(string path, string eraseLine) {
 
 // Deletes a specific entry
 void removeEntry() {
-    ofstream outputFile("outputFileName");
-    ifstream database("database");
+    std::ofstream outputFile("outputFileName");
+    std::ifstream database("database");
     string line;
     string var;
     char mesg[]="Search for the entry you want to remove (type, category, amount, date [02-21-2021]): ";
@@ -222,15 +323,15 @@ void removeEntry() {
 // NOT CURRENTLY IN USE
 void createDatabase() {
     mvwprintw(stdscr, 0, 1, "Your database has been created.");
-    ofstream database("database");
+    std::ofstream database("database");
     database.close();
     clearRefresh();
     main();
 }
 
 void getSetAmount() {
-    ofstream outputFile("outputFileName");
-    ifstream inputFile("database");
+    std::ofstream outputFile("outputFileName");
+    std::ifstream inputFile("database");
     char mesg[]="Enter the Amount: ";
     char str[80];
     echo();
@@ -326,7 +427,7 @@ void addEntry() {
             if (choice == 108) {
                 clearRefresh();
                 break;
-            } else if (choice == 113 || choice == 104) {
+            } else if (choice == 104) {
                 main();
                 clearRefresh();
                 break;
