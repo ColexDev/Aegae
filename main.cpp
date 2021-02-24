@@ -17,7 +17,7 @@ static int choice;
 static int highlight = 0;
 static string token;
 // Add ability for users to add to Category choices (will need to use vectors)
-static string choicesMain[4] = {"Add an Entry", "Remove an Entry", "View an Entry"};
+static string choicesMain[4] = {"Add an Entry", "Remove an Entry", "View an Entry", "Total Spending"};
 static string choicesType[2] = {"Expense", "Income"};
 static string choicesCategoryExpense[4] = {"Food", "Transportation", "Entertainment", "Other"};
 static string choicesCategoryIncome[3] = {"Salary", "Sale", "Other"};
@@ -41,6 +41,12 @@ public:
     void setDescription(string value) { value = description; }	     
 };
 Entry entry;
+
+void clearRefresh() {
+    wclear(stdscr);
+    wrefresh(stdscr);
+
+}
 
 // Get the date and time
 std::string getCurrentDateTime() {
@@ -82,13 +88,12 @@ std::string getCurrentDateTime() {
 
 // ADD A FEATURE TO SHOW THE TOTAL SPENDING IN A CERTAIN TIME FRAME.
 
-// GETS THE MONTH OF A LINE (TEST2.CPP GETS THE AMOUNT OF A LINE)
 int getTimeFrame(string &line) {
     string input {line};
     std::istringstream ss(input);
 
     while(getline(ss, token, ',')) {
-        std::cout << token << '\n';
+        //std::cout << token << '\n';
     }
     std::istringstream ss2(token);
     getline(ss2, token, '-' );
@@ -149,38 +154,39 @@ string getType(string &line) {
     return type;
 }
 
-void totalSpending(int &month) {
+//BROKEN
+void totalSpending(int month) {
+    highlight = 0;
     string line;
     int date;
     string type;
-    double amount;
+    double amount = 0;
     std::ifstream database("database");
-    mvwprintw(stdscr, 0, 1, "Which would you like to see: ");
-    menuInitilization(3, choicesTotalSpending);
+    clearRefresh();
+    while(true) {
+        mvwprintw(stdscr, 0, 1, "Which would you like to see: ");
+        menuInitilization(3, choicesTotalSpending);
+        if (choice == 108) {
+            clearRefresh();
+            break;
+        }
+    }
+    clearRefresh();
+    mvwprintw(stdscr, 0, 1, choicesTotalSpending[highlight].c_str());
     if (choicesTotalSpending[highlight] == "Total Spending") {
+        // WORKS UNTIL HERE
         while(getline(database, line)) {
             type = getType(line);
-            if (type == "Expense") {
-                amount = getAmount(line);
-            } else if (type == "Income") {
-                continue;
-            }
-            
+            if (type == "Expense" && month == getTimeFrame(line)) {
+                amount += getAmount(line);
+            }      
         }
     } else if (choicesTotalSpending[highlight] == "Total Income") {
 
     } else if (choicesTotalSpending[highlight] == "Money Left") {
 
     }
-
-
-}
-
-
-void clearRefresh() {
-    wclear(stdscr);
-    wrefresh(stdscr);
-
+    getch();
 }
 
 void menuInitilization(int numChoices, string arrChoice[], int height) {
@@ -455,7 +461,7 @@ int main() {
         while(true)  {
             curs_set(0);
             mvwprintw(stdscr, 0, 1, "Please Select an Option: ");
-            menuInitilization(3, choicesMain);
+            menuInitilization(4, choicesMain);
             if (choice == 108) {
                 wclear(stdscr);
                 if(choicesMain[highlight] == "Add an Entry") {
@@ -467,6 +473,17 @@ int main() {
                 } else if (choicesMain[highlight] == "View an Entry") {
                     clearRefresh();
                     viewEntry();
+                } else if (choicesMain[highlight] == "Total Spending") {
+                    int found;
+                    clearRefresh();
+                    char mesg[]="What month do you want to see spending for?(1, 2, 3, etc): ";
+                    char find[2];
+                    echo();
+                    mvprintw(0, 0, "%s", mesg);
+                    getstr(find);
+                    noecho();
+                    found = std::stoi(find);
+                    totalSpending(found);
                 }
             } else if (choice == 113 || choice == 104) {
                 break;
