@@ -9,8 +9,8 @@ Work in progress
 
 ## Installation
 ```
-1. git clone https://github.com/ColexDev/moneyManager
-2. cd moneyManager
-3. make
+$ git clone https://github.com/ColexDev/moneyManager
+$ cd moneyManager
+$ make
 ```
 It will be installed and can be started by typing ./main while in the folder.
