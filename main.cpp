@@ -89,6 +89,7 @@ std::string getCurrentDateTime() {
 
 // ADD A FEATURE TO SHOW THE TOTAL SPENDING IN A CERTAIN TIME FRAME.
 
+// RETURNS THE MONTH (1, 2, 3, ETC)
 int getTimeFrame(string &line) {
     string input {line};
     std::istringstream ss(input);
@@ -100,40 +101,9 @@ int getTimeFrame(string &line) {
     getline(ss2, token, '-' );
     int month {stoi(token)};
     return month;
-    // RETURNS THE MONTH (1, 2, 3, ETC)
-    //MAYBE ADD HERE? totalSpending(month);
-
-    /*switch(month) {
-        case 1:
-            //Jan
-        case 2:
-            //Feb
-        case 3:
-            //Mar
-        case 4:
-            //Apr
-        case 5:
-            //May
-        case 6:
-            //Jun
-        case 7:
-            //Jul
-        case 8:
-            //Aug
-        case 9:
-            //Sept
-        case 10:
-            //Oct
-        case 11:
-            //Nov
-        case 12:
-            //Dec
-    }*/
-    
 }
-
-float getAmount(string &line) {
-    // RETURNS THE AMOUNT, DOUBLE (15.65)
+// RETURNS THE AMOUNT, FLOAT (15.65)
+float getAmountLine(string &line) {
     string input {line};
     std::istringstream ss(input);
     string amount;
@@ -146,7 +116,7 @@ float getAmount(string &line) {
     float numAmount {stof(amount)};
     return numAmount;
 }
-
+// Gets the Type (Expense/Income)
 string getType(string &line) {
     string input {line};
     string type;
@@ -155,7 +125,7 @@ string getType(string &line) {
     return type;
 }
 
-float parseTotal(int month, string type2) {
+float getAmountTotal(int month, string _type) {
     std::ifstream database("database");
     string line;
     int date;
@@ -163,8 +133,8 @@ float parseTotal(int month, string type2) {
     float amount {0};
     while(getline(database, line)) {
     type = getType(line);
-    if (type == type2 && month == getTimeFrame(line)) {
-        amount += getAmount(line);
+    if (type == _type && month == getTimeFrame(line)) {
+        amount += getAmountLine(line);
     }   
 }
 string numAmount {std::to_string(amount)};
@@ -184,11 +154,19 @@ void totalSpending(int month) {
         }
     }
     if (choicesTotalSpending[highlight] == "Total Spending") {
-        parseTotal(month, "Expense");
+        getAmountTotal(month, "Expense");
     } else if (choicesTotalSpending[highlight] == "Total Income") {
-        parseTotal(month, "Income");
+        getAmountTotal(month, "Income");
     } else if (choicesTotalSpending[highlight] == "Money Left") {
-        
+        float spent{getAmountTotal(month, "Expense")};
+        float earned{getAmountTotal(month, "Income")};
+        float left{earned-spent};
+        string stringLeft{std::to_string(left)};
+        clearRefresh();
+        mvwprintw(stdscr, 0, 1, "You have $");
+        mvwprintw(stdscr, 0, 11, stringLeft.c_str());
+        mvwprintw(stdscr, 0, stringLeft.length() + 11, " left after your expenses");
+
     }
     getch();
 }
