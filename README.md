@@ -8,7 +8,9 @@ Work in progress
 - ncurses (powers the menu functionality)
 
 ## Installation
+```
 1. git clone https://github.com/ColexDev/moneyManager
 2. cd moneyManager
 3. make
+```
 It will be installed and can be started by typing ./main while in the folder.
