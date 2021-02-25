@@ -7,6 +7,7 @@
 #include <ncurses.h>
 #include <curses.h>
 #include <string.h>
+#include <math.h>
 using std::string;
 using std::getline;
 
@@ -131,7 +132,7 @@ int getTimeFrame(string &line) {
     
 }
 
-double getAmount(string &line) {
+float getAmount(string &line) {
     // RETURNS THE AMOUNT, DOUBLE (15.65)
     string input {line};
     std::istringstream ss(input);
@@ -142,7 +143,7 @@ double getAmount(string &line) {
     std::istringstream ssAmount(amount);
     getline(ssAmount, amount, '$');
     getline(ssAmount, amount, '$');
-    double numAmount {stod(amount)};
+    float numAmount {stof(amount)};
     return numAmount;
 }
 
@@ -154,14 +155,25 @@ string getType(string &line) {
     return type;
 }
 
-//BROKEN
-void totalSpending(int month) {
-    highlight = 0;
+float parseTotal(int month, string type2) {
+    std::ifstream database("database");
     string line;
     int date;
     string type;
-    double amount = 0;
-    std::ifstream database("database");
+    float amount {0};
+    while(getline(database, line)) {
+    type = getType(line);
+    if (type == type2 && month == getTimeFrame(line)) {
+        amount += getAmount(line);
+    }   
+}
+string numAmount {std::to_string(amount)};
+mvwprintw(stdscr, 0, 1, numAmount.c_str());
+return amount;
+}
+
+void totalSpending(int month) {
+    highlight = 0;
     clearRefresh();
     while(true) {
         mvwprintw(stdscr, 0, 1, "Which would you like to see: ");
@@ -171,20 +183,12 @@ void totalSpending(int month) {
             break;
         }
     }
-    clearRefresh();
-    mvwprintw(stdscr, 0, 1, choicesTotalSpending[highlight].c_str());
     if (choicesTotalSpending[highlight] == "Total Spending") {
-        // WORKS UNTIL HERE
-        while(getline(database, line)) {
-            type = getType(line);
-            if (type == "Expense" && month == getTimeFrame(line)) {
-                amount += getAmount(line);
-            }      
-        }
+        parseTotal(month, "Expense");
     } else if (choicesTotalSpending[highlight] == "Total Income") {
-
+        parseTotal(month, "Income");
     } else if (choicesTotalSpending[highlight] == "Money Left") {
-
+        
     }
     getch();
 }
