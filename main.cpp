@@ -93,15 +93,14 @@ std::string getCurrentDateTime() {
 int getTimeFrame(string &line) {
     string input {line};
     std::istringstream ss(input);
-
     while(getline(ss, token, ',')) {
         //std::cout << token << '\n';
     }
     std::istringstream ss2(token);
     getline(ss2, token, '-' );
-    int month {stoi(token)};
-    return month;
+    return stoi(token);
 }
+
 // RETURNS THE AMOUNT, FLOAT (15.65)
 float getAmountLine(string &line) {
     string input {line};
@@ -113,9 +112,9 @@ float getAmountLine(string &line) {
     std::istringstream ssAmount(amount);
     getline(ssAmount, amount, '$');
     getline(ssAmount, amount, '$');
-    float numAmount {stof(amount)};
-    return numAmount;
+    return stof(amount);
 }
+
 // Gets the Type (Expense/Income)
 string getType(string &line) {
     string input {line};
@@ -138,7 +137,7 @@ float getAmountTotal(int month, string _type) {
     }   
 }
 string numAmount {std::to_string(amount)};
-mvwprintw(stdscr, 0, 1, numAmount.c_str());
+//mvwprintw(stdscr, 0, 1, numAmount.c_str());
 return amount;
 }
 
@@ -154,15 +153,17 @@ void totalSpending(int month) {
         }
     }
     if (choicesTotalSpending[highlight] == "Total Spending") {
-        getAmountTotal(month, "Expense");
+        // WORKS, USE FOR TOTAL INCOME AS WELL!
+        mvwprintw(stdscr, 0, 1, "You have spent $");
+        mvwprintw(stdscr, 0, 17, std::to_string(getAmountTotal(month, "Expense")).c_str());
     } else if (choicesTotalSpending[highlight] == "Total Income") {
-        getAmountTotal(month, "Income");
+        mvwprintw(stdscr, 0, 1, "You have made $");
+        mvwprintw(stdscr, 0, 17, std::to_string(getAmountTotal(month, "Income")).c_str());
     } else if (choicesTotalSpending[highlight] == "Money Left") {
         float spent{getAmountTotal(month, "Expense")};
         float earned{getAmountTotal(month, "Income")};
         float left{earned-spent};
         string stringLeft{std::to_string(left)};
-        clearRefresh();
         mvwprintw(stdscr, 0, 1, "You have $");
         mvwprintw(stdscr, 0, 11, stringLeft.c_str());
         mvwprintw(stdscr, 0, stringLeft.length() + 11, " left after your expenses");
