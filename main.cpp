@@ -322,6 +322,7 @@ void createDatabase() {
     main();
 }
 
+// This does too much based off its name]
 void getSetAmount() {
     std::ofstream outputFile("outputFileName");
     std::ifstream inputFile("database");
@@ -332,10 +333,18 @@ void getSetAmount() {
     getstr(str);
     entry.amount = str;
     noecho();
+    // BROKEN
+    char msg[]="Enter a Description (Press enter for none): ";
+    char desc[80];
+    echo();
+    mvprintw(0, 0, "%s", msg);
+    getstr(desc);
+    noecho();
+    entry.description = desc;
     // Sets the date and time
     entry.date = getCurrentDateTime() + '\n';
     // Writes to file
-    outputFile << entry.type << ", " << entry.category << ", " << "$" << entry.amount << ", " << entry.date;
+    outputFile << entry.type << ", " << entry.category << ", " << "$" << entry.amount << ", " << entry.description << ", " << entry.date;
     outputFile << inputFile.rdbuf();
     inputFile.close();
     outputFile.close();
@@ -411,7 +420,7 @@ void setTypeExpense() {
     mvwprintw(stdscr, 0, 1, "Your entry has been submitted to the database!");
 }
 
-// Add ability for user to add a description
+
 void addEntry() {
     highlight = 0;
     while(true) { 
@@ -435,7 +444,7 @@ void addEntry() {
     }
 }
 
-// WORK ON THIS AFTER DESCRIPTION FEATURE
+
 void settings() {
     while(true) {
         mvwprintw(stdscr, 0, 1, "Please Select an Option: ");
