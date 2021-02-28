@@ -153,7 +153,6 @@ void totalSpending(int month) {
         }
     }
     if (choicesTotalSpending[highlight] == "Total Spending") {
-        // WORKS, USE FOR TOTAL INCOME AS WELL!
         mvwprintw(stdscr, 0, 1, "You have spent $");
         mvwprintw(stdscr, 0, 17, std::to_string(getAmountTotal(month, "Expense")).c_str());
     } else if (choicesTotalSpending[highlight] == "Total Income") {
