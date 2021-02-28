@@ -13,4 +13,4 @@ $ git clone https://github.com/ColexDev/moneyManager
 $ cd moneyManager
 $ make
 ```
-It will be installed and can be started by typing ./main while in the folder.
+It will be installed and can be started by typing ./mm while in the folder.
