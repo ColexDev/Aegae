@@ -18,11 +18,12 @@ static int choice;
 static int highlight = 0;
 static string token;
 // Add ability for users to add to Category choices (will need to use vectors)
-static string choicesMain[4] = {"Add an Entry", "Remove an Entry", "View an Entry", "Total Spending"};
+static string choicesMain[5] = {"Add an Entry", "Remove an Entry", "View an Entry", "Total Spending", "Settings"};
 static string choicesType[2] = {"Expense", "Income"};
 static string choicesCategoryExpense[4] = {"Food", "Transportation", "Entertainment", "Other"};
 static string choicesCategoryIncome[3] = {"Salary", "Sale", "Other"};
 static string choicesViewEntry[2] = {"All", "Specific"};
+static string choicesSettings[2] = {"All", "Specific"};
 static string choicesTotalSpending[3] = {"Total Spending", "Total Income", "Money Left"};
 
 //Entry class for storing temp values
@@ -39,14 +40,13 @@ public:
     void setCategory(string value) { value = category; }
     void setAmount(string value) { value = amount; }
     void setDate(string value) { value = date; }
-    void setDescription(string value) { value = description; }	     
+    void setDescription(string value) { value = description; }     
 };
 Entry entry;
 
 void clearRefresh() {
     wclear(stdscr);
     wrefresh(stdscr);
-
 }
 
 // Get the date and time
@@ -137,7 +137,6 @@ float getAmountTotal(int month, string _type) {
     }   
 }
 string numAmount {std::to_string(amount)};
-//mvwprintw(stdscr, 0, 1, numAmount.c_str());
 return amount;
 }
 
@@ -168,7 +167,10 @@ void totalSpending(int month) {
         mvwprintw(stdscr, 0, stringLeft.length() + 11, " left after your expenses");
 
     }
+    mvwprintw(stdscr, 2, 1, "Press any key to continue...");
     getch();
+    clearRefresh();
+    highlight = 0;
 }
 
 void menuInitilization(int numChoices, string arrChoice[], int height) {
@@ -243,6 +245,7 @@ void viewEntry() {
             }
         }
     }
+    highlight = 0;
     main();
 }
 
@@ -296,6 +299,7 @@ void removeEntry() {
             noecho();
             if (choice == 121) {
                 eraseFileLine("database", var);
+                highlight = 0;
                 main();
                 clearRefresh();
                 break;
@@ -314,6 +318,7 @@ void createDatabase() {
     std::ofstream database("database");
     database.close();
     clearRefresh();
+    highlight = 0;
     main();
 }
 
@@ -430,6 +435,14 @@ void addEntry() {
     }
 }
 
+// WORK ON THIS AFTER DESCRIPTION FEATURE
+void settings() {
+    while(true) {
+        mvwprintw(stdscr, 0, 1, "Please Select an Option: ");
+        menuInitilization(2, choicesSettings);
+    }
+}
+
 int main() {
     clearRefresh();
     highlight = 0;
@@ -439,7 +452,6 @@ int main() {
     refresh();
     wrefresh(stdscr);
     keypad(stdscr, true);
-
         while(true)  {
             curs_set(0);
             mvwprintw(stdscr, 0, 1, "Please Select an Option: ");
@@ -466,6 +478,9 @@ int main() {
                     noecho();
                     found = std::stoi(find);
                     totalSpending(found);
+                } else if (choicesMain[highlight] == "Settings") {
+                    clearRefresh();
+                    settings();
                 }
             } else if (choice == 113 || choice == 104) {
                 break;
