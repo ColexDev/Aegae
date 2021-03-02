@@ -26,9 +26,12 @@ static string choicesViewEntry[2] = {"All", "Specific"};
 static string choicesSettings[2] = {"All", "Specific"};
 static string choicesTotalSpending[3] = {"Total Spending", "Total Income", "Money Left"};
 
+enum ExpenseCategory {
+    
+};
+
 //Entry class for storing temp values
-class Entry
-{
+class Entry {
 public:
     string type;
     string category;
@@ -54,12 +57,9 @@ std::string getCurrentDateTime() {
     std::time_t _time;
     std::tm* timeinfo;
     char time[80];
-
     std::time(&_time); // get time -> store in address
     timeinfo = std::localtime(&_time); // address to struct rep
-
     std::strftime(time, 80 ,"%m-%d-%Y", timeinfo); // format time to `time`
-    
     std::string __time(time); // convert char[] -> std::string
     return __time;
 }
@@ -452,7 +452,10 @@ void settings() {
     }
 }
 
+// MAKE AN EXPENSE SHEET, HAVE IT SHOW ALL MONTHS AND YEARLY TOO
+
 int main() {
+    static bool done{false};
     clearRefresh();
     highlight = 0;
     initscr();
@@ -461,7 +464,22 @@ int main() {
     refresh();
     wrefresh(stdscr);
     keypad(stdscr, true);
-        while(true)  {
+    // Add feature where if the program has been running for more than a few seconds
+    // that this does not display again
+    if(done == false) {
+        while(true) {
+            wattron(stdscr, A_BOLD);
+            mvwprintw(stdscr, 0, 1, "Money Manager");
+            mvwprintw(stdscr, 1, 1, "By: ColexDev");
+            wattroff(stdscr, A_BOLD);
+            mvwprintw(stdscr, 3, 1, "Press any key to continue...");
+            getch();
+            clearRefresh();
+            break;
+        }
+            done = true;
+    }
+        while(true) {
             curs_set(0);
             mvwprintw(stdscr, 0, 1, "Please Select an Option: ");
             menuInitilization(4, choicesMain);
