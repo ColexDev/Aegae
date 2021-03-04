@@ -8,6 +8,7 @@
 #include <curses.h>
 #include <string.h>
 #include <math.h>
+#include <vector>
 using std::string;
 using std::getline;
 
@@ -18,12 +19,12 @@ static int choice;
 static int highlight = 0;
 static string token;
 // Add ability for users to add to Category choices (will need to use vectors)
-static string choicesMain[5] = {"Add an Entry", "Remove an Entry", "View an Entry", "Total Spending", "Settings"};
-static string choicesType[2] = {"Expense", "Income"};
-static string choicesCategoryExpense[4] = {"Food", "Transportation", "Entertainment", "Other"};
-static string choicesCategoryIncome[3] = {"Salary", "Sale", "Other"};
-static string choicesViewEntry[2] = {"All", "Specific"};
-static string choicesTotalSpending[3] = {"Total Spending", "Total Income", "Money Left"};
+static std::vector<string> choicesMain {"Add an Entry", "Remove an Entry", "View an Entry", "Total Spending", "Settings"};
+static std::vector<string> choicesType {"Expense", "Income"};
+static std::vector<string> choicesCategoryExpense {"Food", "Transportation", "Entertainment", "Other"};
+static std::vector<string> choicesCategoryIncome {"Salary", "Sale", "Other"};
+static std::vector<string> choicesViewEntry {"All", "Specific"};
+static std::vector<string> choicesTotalSpending {"Total Spending", "Total Income", "Money Left"};
 
 //Entry class for storing temp values
 class Entry
@@ -127,7 +128,8 @@ string getType(string &line)
     return type;
 }
 
-float getAmountTotal(int month, string _type)
+// GET RID OF CONST AND LEARN WHY THERE IS AN ERROR
+float getAmountTotal(const int &month, const string &_type)
 {
     std::ifstream database("database");
     string line;
@@ -146,13 +148,13 @@ string numAmount {std::to_string(amount)};
 return amount;
 }
 
-void totalSpending(int month) {
+void totalSpending(const int &month) {
     highlight = 0;
     clearRefresh();
     while(true)
     {
         mvwprintw(stdscr, 0, 1, "Which would you like to see: ");
-        menuInitilization(3, choicesTotalSpending);
+        menuInitilization(choicesTotalSpending);
         if (choice == 108)
         {
             switch (highlight)
@@ -187,12 +189,13 @@ void totalSpending(int month) {
     highlight = 0;
 }
 
-void menuInitilization(int numChoices, string arrChoice[], int height)
+void menuInitilization(const std::vector<string> &arrChoice)
 {
-    for(int i = 0; i < numChoices; i++)
+    auto size = arrChoice.size();
+    for(int i = 0; i < size; i++)
     {
         if(i == highlight) {wattron(stdscr, A_REVERSE);}
-        mvwprintw(stdscr, i+height, 1, arrChoice[i].c_str());
+        mvwprintw(stdscr, i, 1, arrChoice[i].c_str());
         wattroff(stdscr, A_REVERSE);
     }
     choice = wgetch(stdscr);
@@ -205,8 +208,8 @@ void menuInitilization(int numChoices, string arrChoice[], int height)
                 break;
         case 106:
             highlight++;
-            if (highlight == numChoices)
-                highlight = numChoices - 1;
+            if (highlight == size)
+                highlight = size - 1;
                 break;
     }
 }
@@ -247,7 +250,7 @@ void viewEntry()
     int n {0};
     while(true) {
         mvwprintw(stdscr, 0, 1, "Which entries would you like to see: ");
-        menuInitilization(2, choicesViewEntry);
+        menuInitilization(choicesViewEntry);
         if(choice == 108)
         {
             switch (highlight)
@@ -277,7 +280,7 @@ void viewEntry()
 }
 
 // Copied from stack overflow, its function is self-explanatory. 
-void eraseFileLine(string path, string eraseLine)
+void eraseFileLine(const string path, const string eraseLine)
 {
     string line;
     std::ifstream fin;
@@ -397,7 +400,7 @@ void setTypeIncome()
     {
         clearRefresh();
         mvwprintw(stdscr, 0, 1, "What was it from ");
-        menuInitilization(3, choicesCategoryIncome);
+        menuInitilization(choicesCategoryIncome);
         if (choice == 113)
         {
             clearRefresh();
@@ -431,7 +434,7 @@ void setTypeExpense() {
     {  
         clearRefresh();
         mvwprintw(stdscr, 0, 1, "What was it spent on: ");
-        menuInitilization(4, choicesCategoryExpense); 
+        menuInitilization(choicesCategoryExpense); 
         if (choice == 113)
         {
             clearRefresh();
@@ -467,7 +470,7 @@ void addEntry()
     while(true)
     { 
         mvwprintw(stdscr, 0, 1, "Please Select the Category: ");
-        menuInitilization(2, choicesType);
+        menuInitilization(choicesType);
             if (choice == 108)
             {
                 clearRefresh();
@@ -521,7 +524,7 @@ int main()
         {
             curs_set(0);
             mvwprintw(stdscr, 0, 1, "Please Select an Option: ");
-            menuInitilization(4, choicesMain);
+            menuInitilization(choicesMain);
             switch (choice)
             {
                 case 108:
@@ -538,7 +541,6 @@ int main()
                             clearRefresh();
                             viewEntry();
                         case 3:
-                            int month;
                             clearRefresh();
                             char mesg[]="What month do you want to see spending for?(1, 2, 3, etc): ";
                             char find[2];
@@ -546,8 +548,7 @@ int main()
                             mvprintw(0, 0, "%s", mesg);
                             getstr(find);
                             noecho();
-                            month = std::stoi(find);
-                            totalSpending(month);
+                            totalSpending(std::stoi(find));
                     }
                case 113 || 104:
                 break;
