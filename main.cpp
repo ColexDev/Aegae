@@ -155,26 +155,31 @@ void totalSpending(int month) {
         menuInitilization(3, choicesTotalSpending);
         if (choice == 108)
         {
-            clearRefresh();
-            break;
+            switch (highlight)
+            {
+                case 0:
+                    clearRefresh();
+                    mvwprintw(stdscr, 0, 1, "You have spent $");
+                    mvwprintw(stdscr, 0, 17, std::to_string(getAmountTotal(month, "Expense")).c_str());
+                    break;
+                case 1:
+                    clearRefresh();
+                    mvwprintw(stdscr, 0, 1, "You have made $");
+                    mvwprintw(stdscr, 0, 17, std::to_string(getAmountTotal(month, "Income")).c_str());
+                    break;
+                case 2:
+                    clearRefresh();
+                    float spent{getAmountTotal(month, "Expense")};
+                    float earned{getAmountTotal(month, "Income")};
+                    float left{earned-spent};
+                    string stringLeft{std::to_string(left)};
+                    mvwprintw(stdscr, 0, 1, "You have $");
+                    mvwprintw(stdscr, 0, 11, stringLeft.c_str());
+                    mvwprintw(stdscr, 0, stringLeft.length() + 11, " left after your expenses");
+                    break;
+            }
+            break;       
         }
-    }
-    switch (highlight)
-    {
-        case 0:
-            mvwprintw(stdscr, 0, 1, "You have spent $");
-            mvwprintw(stdscr, 0, 17, std::to_string(getAmountTotal(month, "Expense")).c_str());
-        case 1:
-            mvwprintw(stdscr, 0, 1, "You have made $");
-            mvwprintw(stdscr, 0, 17, std::to_string(getAmountTotal(month, "Income")).c_str());
-        case 2:
-            float spent{getAmountTotal(month, "Expense")};
-            float earned{getAmountTotal(month, "Income")};
-            float left{earned-spent};
-            string stringLeft{std::to_string(left)};
-            mvwprintw(stdscr, 0, 1, "You have $");
-            mvwprintw(stdscr, 0, 11, stringLeft.c_str());
-            mvwprintw(stdscr, 0, stringLeft.length() + 11, " left after your expenses");
     }
     mvwprintw(stdscr, 2, 1, "Press any key to continue...");
     getch();
@@ -533,7 +538,7 @@ int main()
                             clearRefresh();
                             viewEntry();
                         case 3:
-                            int found;
+                            int month;
                             clearRefresh();
                             char mesg[]="What month do you want to see spending for?(1, 2, 3, etc): ";
                             char find[2];
@@ -541,8 +546,8 @@ int main()
                             mvprintw(0, 0, "%s", mesg);
                             getstr(find);
                             noecho();
-                            found = std::stoi(find);
-                            totalSpending(found);
+                            month = std::stoi(find);
+                            totalSpending(month);
                     }
                case 113 || 104:
                 break;
