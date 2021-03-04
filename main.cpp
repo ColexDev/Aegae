@@ -23,7 +23,6 @@ static string choicesType[2] = {"Expense", "Income"};
 static string choicesCategoryExpense[4] = {"Food", "Transportation", "Entertainment", "Other"};
 static string choicesCategoryIncome[3] = {"Salary", "Sale", "Other"};
 static string choicesViewEntry[2] = {"All", "Specific"};
-static string choicesSettings[2] = {"All", "Specific"};
 static string choicesTotalSpending[3] = {"Total Spending", "Total Income", "Money Left"};
 
 //Entry class for storing temp values
@@ -242,34 +241,32 @@ void viewEntry()
     std::ifstream database("database");
     int n {0};
     while(true) {
-        mvwprintw(stdscr, n, 1, "Which entries would you like to see: ");
+        mvwprintw(stdscr, 0, 1, "Which entries would you like to see: ");
         menuInitilization(2, choicesViewEntry);
         if(choice == 108)
         {
             switch (highlight)
             {
+                case 0:
+                    clearRefresh();
+                    while(getline(database, line))
+                    {
+                        mvwprintw(stdscr, n, 1, line.c_str());
+                        n++;
+                    }
+                    // Add a feature to say if database is empty.
+                    mvwprintw(stdscr, n+2, 1, "Press any key to continue...");
+                    getch();
+                    clearRefresh();
+                    break;
                 case 1:
                     clearRefresh();
-                    while(getline(database, line))
-                    {
-                        mvwprintw(stdscr, n, 1, line.c_str());
-                        n++;
-                    }
-                // Add a feature to say if database is empty.
-                mvwprintw(stdscr, n+2, 1, "Press any key to continue...");
-                getch();
-                clearRefresh();
-                break;
-                case 2:
-                    clearRefresh();
-                    while(getline(database, line))
-                    {
-                        mvwprintw(stdscr, n, 1, line.c_str());
-                        n++;
-                    }
+                    findEntry();
             }
+            break;
         }
     }
+    clearRefresh();
     highlight = 0;
     main();
 }
@@ -487,14 +484,6 @@ void addEntry()
 }
 
 
-void settings()
-{
-    while(true) 
-    {
-        mvwprintw(stdscr, 0, 1, "Please Select an Option: ");
-        menuInitilization(2, choicesSettings);
-    }
-}
 
 // MAKE AN EXPENSE SHEET, HAVE IT SHOW ALL MONTHS AND YEARLY TOO
 int main()
