@@ -19,15 +19,16 @@ void addEntry();
 static int choice;
 static int highlight = 0;
 static string token;
-// Add ability for users to add to Category choices (will need to use vectors)
+
 static std::vector<string> choicesMain {"Add an Entry", "Remove an Entry", "View an Entry", "Total Spending"};
 static std::vector<string> choicesType {"Expense", "Income"};
+/* Edit the two below to add/delete category options */
 static std::vector<string> choicesCategoryExpense {"Food", "Transportation", "Entertainment", "Other"};
 static std::vector<string> choicesCategoryIncome {"Salary", "Sale", "Other"};
 static std::vector<string> choicesViewEntry {"All", "Specific"};
 static std::vector<string> choicesTotalSpending {"Total Spending", "Total Income", "Money Left"};
 
-//Entry class for storing temp values
+// Entry class for storing temp values
 class Entry
 {
 public:
@@ -94,6 +95,7 @@ int getTimeFrame(string &line)
 {
     string input {line};
     std::istringstream ss(input);
+    while(getline(ss, token, ',')){}
     std::istringstream ss2(token);
     getline(ss2, token, '-' );
     return stoi(token);
@@ -124,7 +126,7 @@ string getType(string &line)
     return type;
 }
 
-float getAmountTotal(const int &month, const string &_type)
+float getAmountTotal(const int month, const string _type)
 {
     std::ifstream database("database.txt");
     string line;
@@ -143,7 +145,7 @@ string numAmount {std::to_string(amount)};
 return amount;
 }
 
-void totalSpending(int month) {
+void totalSpending(const int month) {
     highlight = 0;
     clearRefresh();
     while(true)
@@ -257,7 +259,6 @@ void viewEntry()
                         mvwprintw(stdscr, n, 1, line.c_str());
                         n++;
                     }
-                    // Add a feature to say if database is empty.
                     mvwprintw(stdscr, n+2, 1, "Press any key to continue...");
                     getch();
                     clearRefresh();
