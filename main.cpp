@@ -9,17 +9,18 @@
 #include <string.h>
 #include <math.h>
 #include <vector>
+#include <algorithm>
 using std::string;
 using std::getline;
 
 int main();
-void menuInitilization(int numChoices, string arrChoice[], int height = 2);
+void menuInitilization(const std::vector<string> &arrChoice);
 void addEntry();
 static int choice;
 static int highlight = 0;
 static string token;
 // Add ability for users to add to Category choices (will need to use vectors)
-static std::vector<string> choicesMain {"Add an Entry", "Remove an Entry", "View an Entry", "Total Spending", "Settings"};
+static std::vector<string> choicesMain {"Add an Entry", "Remove an Entry", "View an Entry", "Total Spending"};
 static std::vector<string> choicesType {"Expense", "Income"};
 static std::vector<string> choicesCategoryExpense {"Food", "Transportation", "Entertainment", "Other"};
 static std::vector<string> choicesCategoryIncome {"Salary", "Sale", "Other"};
@@ -51,7 +52,7 @@ void clearRefresh()
 }
 
 // Get the date and time
-std::string getCurrentDateTime()
+string getCurrentDateTime()
 {
     std::time_t _time;
     std::tm* timeinfo;
@@ -59,14 +60,14 @@ std::string getCurrentDateTime()
     std::time(&_time); // get time -> store in address
     timeinfo = std::localtime(&_time); // address to struct rep
     std::strftime(time, 80 ,"%m-%d-%Y", timeinfo); // format time to `time`
-    std::string __time(time); // convert char[] -> std::string
+    string __time(time); // convert char[] -> std::string
     return __time;
 }
 
 // Get number of entries
 /*string listNumEntries()
 {
-    ifstream database("database");
+    ifstream database("database.txt");
     string choice;
     cout << "Would you like to view all entries or see the number of entries? [a or n]: " << endl;
     cin >> choice;
@@ -87,17 +88,12 @@ std::string getCurrentDateTime()
     database.close();
 }*/
 
-// ADD A FEATURE TO SHOW THE TOTAL SPENDING IN A CERTAIN TIME FRAME.
 
 // RETURNS THE MONTH (1, 2, 3, ETC)
 int getTimeFrame(string &line)
 {
     string input {line};
     std::istringstream ss(input);
-    while(getline(ss, token, ','))
-    {
-        //std::cout << token << '\n';
-    }
     std::istringstream ss2(token);
     getline(ss2, token, '-' );
     return stoi(token);
@@ -128,10 +124,9 @@ string getType(string &line)
     return type;
 }
 
-// GET RID OF CONST AND LEARN WHY THERE IS AN ERROR
 float getAmountTotal(const int &month, const string &_type)
 {
-    std::ifstream database("database");
+    std::ifstream database("database.txt");
     string line;
     int date;
     string type;
@@ -148,7 +143,7 @@ string numAmount {std::to_string(amount)};
 return amount;
 }
 
-void totalSpending(const int &month) {
+void totalSpending(int month) {
     highlight = 0;
     clearRefresh();
     while(true)
@@ -195,7 +190,7 @@ void menuInitilization(const std::vector<string> &arrChoice)
     for(int i = 0; i < size; i++)
     {
         if(i == highlight) {wattron(stdscr, A_REVERSE);}
-        mvwprintw(stdscr, i, 1, arrChoice[i].c_str());
+        mvwprintw(stdscr, i+2, 1, arrChoice[i].c_str());
         wattroff(stdscr, A_REVERSE);
     }
     choice = wgetch(stdscr);
@@ -217,7 +212,7 @@ void menuInitilization(const std::vector<string> &arrChoice)
 void findEntry()
 {
     clearRefresh();
-    std::ifstream database("database");
+    std::ifstream database("database.txt");
     string line;
     char mesg[]="Enter the a keyword to search for (date[02-21-2021], type, etc): ";
     char find[80];
@@ -246,7 +241,7 @@ void viewEntry()
     highlight = 0;
     clearRefresh();
     string line{};
-    std::ifstream database("database");
+    std::ifstream database("database.txt");
     int n {0};
     while(true) {
         mvwprintw(stdscr, 0, 1, "Which entries would you like to see: ");
@@ -310,7 +305,7 @@ void eraseFileLine(const string path, const string eraseLine)
 void removeEntry()
 {
     std::ofstream outputFile("outputFileName");
-    std::ifstream database("database");
+    std::ifstream database("database.txt");
     string line;
     string var;
     char mesg[]="Search for the entry you want to remove (type, category, amount, date [02-21-2021]): ";
@@ -333,7 +328,7 @@ void removeEntry()
             noecho();
             if (choice == 121)
             {
-                eraseFileLine("database", var);
+                eraseFileLine("database.txt", var);
                 highlight = 0;
                 main();
                 clearRefresh();
@@ -351,7 +346,7 @@ void removeEntry()
 void createDatabase()
 {
     mvwprintw(stdscr, 0, 1, "Your database has been created.");
-    std::ofstream database("database");
+    std::ofstream database("database.txt");
     database.close();
     clearRefresh();
     highlight = 0;
@@ -362,13 +357,12 @@ void createDatabase()
 void getSetAmount()
 {
     std::ofstream outputFile("outputFileName");
-    std::ifstream inputFile("database");
+    std::ifstream inputFile("database.txt");
     char mesg[]="Enter the Amount: ";
     char str[80];
     echo();
     mvprintw(0, 0, "%s", mesg);
-    getstr(str);
-    entry.amount = str;
+    getstr(str); entry.amount = str;
     noecho();
     char msg[]="Enter a Description (Press enter for none): ";
     char desc[80];
@@ -384,8 +378,8 @@ void getSetAmount()
     outputFile << inputFile.rdbuf();
     inputFile.close();
     outputFile.close();
-    remove("database");
-    rename("outputFileName","database");
+    remove("database.txt");
+    rename("outputFileName","database.txt");
     clearRefresh();
     highlight = 0;
     main();
@@ -406,15 +400,7 @@ void setTypeIncome()
             clearRefresh();
             break;
         } else if (choice == 108) {
-            switch (highlight)
-            {
-                case 0:
-                    entry.category = "Salary";
-                case 1:
-                    entry.category = "Sale";
-                case 2:
-                    entry.category = "Other";
-            }
+            entry.category = choicesCategoryIncome[highlight];
             clearRefresh();
             break;
         } else if (choice == 104) {
@@ -441,17 +427,7 @@ void setTypeExpense() {
             break;
         } else if (choice == 108)
         {
-            switch (highlight)
-            {
-                case 0:
-                    entry.category = "Food";
-                case 1:
-                    entry.category = "Transportation";
-                case 2:
-                    entry.category = "Entertainment";
-                case 3:
-                    entry.category = "Other";
-            }
+            entry.category = choicesCategoryExpense[highlight];
             clearRefresh();
             break;
         } else if (choice == 104) {
@@ -548,7 +524,8 @@ int main()
                             mvprintw(0, 0, "%s", mesg);
                             getstr(find);
                             noecho();
-                            totalSpending(std::stoi(find));
+                            int x {std::stoi(find)};
+                            totalSpending(x);
                     }
                case 113 || 104:
                 break;
