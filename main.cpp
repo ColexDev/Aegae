@@ -20,7 +20,7 @@ static int choice;
 static int highlight = 0;
 static string token;
 
-static std::vector<string> choicesMain {"Add an Entry", "Remove an Entry", "View an Entry", "Total Spending"};
+static std::vector<string> choicesMain {"Add an Entry", "Remove an Entry", "View an Entry", "Reports"};
 static std::vector<string> choicesType {"Expense", "Income"};
 /* Edit the two below to add/delete category options */
 static std::vector<string> choicesCategoryExpense {"Food", "Transportation", "Entertainment", "Other"};
@@ -31,19 +31,27 @@ static std::vector<string> choicesTotalSpending {"Total Spending", "Total Income
 // Entry class for storing temp values
 class Entry
 {
-public:
+private:
     string type;
     string category;
     string amount;
     string date;
     string description;
 // Set the value (not currently used)
-    void setType(string value) { value = type; }
-    void setCategory(string value) { value = category; }
-    void setAmount(string value) { value = amount; }
-    void setDate(string value) { value = date; }
-    void setDescription(string value) { value = description; }     
+public:
+    void setType(string value) {value = type;}
+    void setCategory(string value) {value = category;}
+    void setAmount(string value) {value = amount;}
+    void setDate(string value) {value = date;}
+    void setDescription(string value) {value = description;}
+
+    string getType() {return type;}
+    string getCategory() {return category;}
+    string getAmount() {return amount;}
+    string getDate() {return date;}
+    string getDescription() {return description;}
 };
+
 Entry entry;
 
 void clearRefresh()
@@ -145,7 +153,8 @@ string numAmount {std::to_string(amount)};
 return amount;
 }
 
-void totalSpending(const int month) {
+void totalSpending(const int month)
+{
     highlight = 0;
     clearRefresh();
     while(true)
@@ -363,7 +372,8 @@ void getSetAmount()
     char str[80];
     echo();
     mvprintw(0, 0, "%s", mesg);
-    getstr(str); entry.amount = str;
+    getstr(str); 
+    entry.setAmount(str);
     noecho();
     char msg[]="Enter a Description (Press enter for none): ";
     char desc[80];
@@ -371,11 +381,11 @@ void getSetAmount()
     mvprintw(0, 0, "%s", msg);
     getstr(desc);
     noecho();
-    entry.description = desc;
+    entry.setDescription(desc);
     // Sets the date and time
-    entry.date = getCurrentDateTime() + '\n';
+    entry.setDate(getCurrentDateTime() + '\n');
     // Writes to file
-    outputFile << entry.type << ", " << entry.category << ", " << "$" << entry.amount << ", " << entry.description << ", " << entry.date;
+    outputFile << entry.getType() << ", " << entry.getCategory() << ", " << "$" << entry.getAmount() << ", " << entry.getDescription() << ", " << entry.getDate();
     outputFile << inputFile.rdbuf();
     inputFile.close();
     outputFile.close();
@@ -384,29 +394,29 @@ void getSetAmount()
     clearRefresh();
     highlight = 0;
     main();
-    
 }
 
 void setTypeIncome()
 {
     highlight = 0;
-    entry.type = "Income";
+    entry.setType("Income");
     while(true)
     {
         clearRefresh();
         mvwprintw(stdscr, 0, 1, "What was it from ");
         menuInitilization(choicesCategoryIncome);
-        if (choice == 113)
+        switch(choice)
         {
-            clearRefresh();
-            break;
-        } else if (choice == 108) {
-            entry.category = choicesCategoryIncome[highlight];
-            clearRefresh();
-            break;
-        } else if (choice == 104) {
-            clearRefresh();
-            addEntry();
+            case 113:
+                clearRefresh();
+                break;
+            case 108: 
+                entry.setCategory(choicesCategoryIncome[highlight]);
+                clearRefresh();
+                break;
+            case 104:
+                clearRefresh();
+                addEntry();
         }
     }
     getSetAmount();
@@ -414,26 +424,27 @@ void setTypeIncome()
     mvwprintw(stdscr, 0, 1, "Your entry has been submitted to the database!");
 }
 
-void setTypeExpense() {
+void setTypeExpense()
+{
     highlight = 0;
-    entry.type = "Expense";
+    entry.setType("Expense");
     while(true)
     {  
         clearRefresh();
         mvwprintw(stdscr, 0, 1, "What was it spent on: ");
         menuInitilization(choicesCategoryExpense); 
-        if (choice == 113)
+        switch(choice)
         {
-            clearRefresh();
-            break;
-        } else if (choice == 108)
-        {
-            entry.category = choicesCategoryExpense[highlight];
-            clearRefresh();
-            break;
-        } else if (choice == 104) {
-            clearRefresh();
-            addEntry();
+            case 113:
+                clearRefresh();
+                break;
+            case 108: 
+                entry.setCategory(choicesCategoryIncome[highlight]);
+                clearRefresh();
+                break;
+            case 104:
+                clearRefresh();
+                addEntry();
         }
     }
     getSetAmount();
@@ -448,17 +459,16 @@ void addEntry()
     { 
         mvwprintw(stdscr, 0, 1, "Please Select the Category: ");
         menuInitilization(choicesType);
-            if (choice == 108)
-            {
+        switch(choice)
+        {
+            case 108:
                 clearRefresh();
                 break;
-            } else if (choice == 104) {
+            case 104:
                 main();
                 clearRefresh();
                 break;
-            } else {
-                continue;
-            }
+        }
     }
     if(choicesType[highlight] == "Expense")
     {
@@ -468,21 +478,17 @@ void addEntry()
     }
 }
 
-
-
 // MAKE AN EXPENSE SHEET, HAVE IT SHOW ALL MONTHS AND YEARLY TOO
 int main()
 {
-    static bool done{false};
+    static bool firstRun{false};
     clearRefresh();
     highlight = 0;
     initscr();
     cbreak();
     noecho();
-    refresh();
-    wrefresh(stdscr);
     keypad(stdscr, true);
-    if(done == false)
+    if(firstRun == true)
     {
         while(true)
         {
@@ -495,7 +501,7 @@ int main()
             clearRefresh();
             break;
         }
-            done = true;
+            firstRun = false;
     }
         while(true)
         {
@@ -519,7 +525,7 @@ int main()
                             viewEntry();
                         case 3:
                             clearRefresh();
-                            char mesg[]="What month do you want to see spending for?(1, 2, 3, etc): ";
+                            char mesg[]="What month do you want to see a report for?(1, 2, 3, etc): ";
                             char find[2];
                             echo();
                             mvprintw(0, 0, "%s", mesg);
