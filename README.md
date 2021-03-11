@@ -4,7 +4,7 @@ A simple CLI application to manage money
 Work in progress
 
 ## Dependencies
-- g++ (if you use the makefile, you can use any C++ compiler if you include ncurses)
+- g++ (if you use the makefile, you can use any C compiler if you include ncurses)
 - ncurses (powers the menu functionality)
 
 ## Installation
