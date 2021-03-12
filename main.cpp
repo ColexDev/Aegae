@@ -39,11 +39,11 @@ private:
     string description;
 // Set the value (not currently used)
 public:
-    void setType(string value) {value = type;}
-    void setCategory(string value) {value = category;}
-    void setAmount(string value) {value = amount;}
-    void setDate(string value) {value = date;}
-    void setDescription(string value) {value = description;}
+    void setType(string value) {type = value;}
+    void setCategory(string value) {category = value;}
+    void setAmount(string value) {amount = value;}
+    void setDate(string value) {date = value;}
+    void setDescription(string value) {description = value;}
 
     string getType() {return type;}
     string getCategory() {return category;}
@@ -54,11 +54,7 @@ public:
 
 Entry entry;
 
-void clearRefresh()
-{
-    wclear(stdscr);
-    wrefresh(stdscr);
-}
+void clearRefresh(){ wclear(stdscr); wrefresh(stdscr); }
 
 // Get the date and time
 string getCurrentDateTime()
@@ -396,7 +392,7 @@ void getSetAmount()
     main();
 }
 
-void setTypeIncome()
+void setCategoryIncome()
 {
     highlight = 0;
     entry.setType("Income");
@@ -412,19 +408,17 @@ void setTypeIncome()
                 break;
             case 108: 
                 entry.setCategory(choicesCategoryIncome[highlight]);
+                getch();
                 clearRefresh();
-                break;
+                getSetAmount();
             case 104:
                 clearRefresh();
                 addEntry();
         }
     }
-    getSetAmount();
-    clearRefresh();
-    mvwprintw(stdscr, 0, 1, "Your entry has been submitted to the database!");
 }
 
-void setTypeExpense()
+void setCategoryExpense()
 {
     highlight = 0;
     entry.setType("Expense");
@@ -439,17 +433,15 @@ void setTypeExpense()
                 clearRefresh();
                 break;
             case 108: 
-                entry.setCategory(choicesCategoryIncome[highlight]);
+                entry.setCategory(choicesCategoryExpense[highlight]);
                 clearRefresh();
+                getSetAmount();
                 break;
             case 104:
                 clearRefresh();
                 addEntry();
         }
     }
-    getSetAmount();
-    clearRefresh();
-    mvwprintw(stdscr, 0, 1, "Your entry has been submitted to the database!");
 }
 
 void addEntry()
@@ -463,19 +455,19 @@ void addEntry()
         {
             case 108:
                 clearRefresh();
-                break;
+                if(choicesType[highlight] == "Expense")
+                {
+                    setCategoryExpense();
+                } else if (choicesType[highlight] == "Income") {
+                    setCategoryIncome();
+                }
             case 104:
                 main();
                 clearRefresh();
                 break;
         }
     }
-    if(choicesType[highlight] == "Expense")
-    {
-        setTypeExpense();
-    } else if (choicesType[highlight] == "Income") {
-        setTypeIncome();
-    }
+    
 }
 
 // MAKE AN EXPENSE SHEET, HAVE IT SHOW ALL MONTHS AND YEARLY TOO
@@ -488,7 +480,7 @@ int main()
     cbreak();
     noecho();
     keypad(stdscr, true);
-    if(firstRun == true)
+    if(firstRun == false)
     {
         while(true)
         {
@@ -501,7 +493,7 @@ int main()
             clearRefresh();
             break;
         }
-            firstRun = false;
+            firstRun = true;
     }
         while(true)
         {
