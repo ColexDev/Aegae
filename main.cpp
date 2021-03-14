@@ -17,14 +17,14 @@ int main();
 void menuInitilization(const std::vector<string> &arrChoice);
 void addEntry();
 static int choice;
-static int highlight = 0;
+static int highlight{0}; 
 static string token;
 
 static std::vector<string> choicesMain {"Add an Entry", "Remove an Entry", "View an Entry", "Reports"};
 static std::vector<string> choicesType {"Expense", "Income"};
 /* Edit the two below to add/delete category options */
 static std::vector<string> choicesCategoryExpense {"Food", "Transportation", "Entertainment", "Other"};
-static std::vector<string> choicesCategoryIncome {"Salary", "Sale", "Other"};
+static std::vector<string> choicesCategoryIncome {"Salary", "Sale", "Gift", "Other"};
 static std::vector<string> choicesViewEntry {"All", "Specific"};
 static std::vector<string> choicesTotalSpending {"Total Spending", "Total Income", "Money Left"};
 
@@ -32,24 +32,24 @@ static std::vector<string> choicesTotalSpending {"Total Spending", "Total Income
 class Entry
 {
 private:
-    string type;
-    string category;
-    string amount;
-    string date;
-    string description;
+    string m_type;
+    string m_category;
+    string m_amount;
+    string m_date;
+    string m_description;
 // Set the value (not currently used)
 public:
-    void setType(string value) {type = value;}
-    void setCategory(string value) {category = value;}
-    void setAmount(string value) {amount = value;}
-    void setDate(string value) {date = value;}
-    void setDescription(string value) {description = value;}
+    void setType(string t_value) {m_type = t_value;}
+    void setCategory(string t_value) {m_category = t_value;}
+    void setAmount(string t_value) {m_amount = t_value;}
+    void setDate(string t_value) {m_date = t_value;}
+    void setDescription(string t_value) {m_description = t_value;}
 
-    string getType() {return type;}
-    string getCategory() {return category;}
-    string getAmount() {return amount;}
-    string getDate() {return date;}
-    string getDescription() {return description;}
+    string getType() {return m_type;}
+    string getCategory() {return m_category;}
+    string getAmount() {return m_amount;}
+    string getDate() {return m_date;}
+    string getDescription() {return m_description;}
 };
 
 Entry entry;
@@ -95,10 +95,9 @@ string getCurrentDateTime()
 
 
 // RETURNS THE MONTH (1, 2, 3, ETC)
-int getTimeFrame(string &line)
+int getTimeFrame(string &t_line)
 {
-    string input {line};
-    std::istringstream ss(input);
+    std::istringstream ss(t_line);
     while(getline(ss, token, ',')){}
     std::istringstream ss2(token);
     getline(ss2, token, '-' );
@@ -106,10 +105,9 @@ int getTimeFrame(string &line)
 }
 
 // RETURNS THE AMOUNT, FLOAT (15.65)
-float getAmountLine(string &line)
+float getAmountLine(string &t_line)
 {
-    string input {line};
-    std::istringstream ss(input);
+    std::istringstream ss(t_line);
     string amount;
     getline(ss, amount, ',');
     getline(ss, amount, ',');
@@ -121,16 +119,15 @@ float getAmountLine(string &line)
 }
 
 // Gets the Type (Expense/Income)
-string getType(string &line)
+string getType(string &t_line)
 {
-    string input {line};
     string type;
-    std::istringstream ss(input);
+    std::istringstream ss(t_line);
     getline(ss, type, ',');
     return type;
 }
 
-float getAmountTotal(const int month, const string _type)
+float getAmountTotal(const int t_MONTH, const string t_TYPE)
 {
     std::ifstream database("database.txt");
     string line;
@@ -140,7 +137,7 @@ float getAmountTotal(const int month, const string _type)
     while(getline(database, line))
     {
         type = getType(line);
-        if (type == _type && month == getTimeFrame(line))
+        if (type == t_TYPE && t_MONTH == getTimeFrame(line))
         {
             amount += getAmountLine(line);
         } 
@@ -149,7 +146,7 @@ string numAmount {std::to_string(amount)};
 return amount;
 }
 
-void totalSpending(const int month)
+void totalSpending(const int t_MONTH)
 {
     highlight = 0;
     clearRefresh();
@@ -164,17 +161,17 @@ void totalSpending(const int month)
                 case 0:
                     clearRefresh();
                     mvwprintw(stdscr, 0, 1, "You have spent $");
-                    mvwprintw(stdscr, 0, 17, std::to_string(getAmountTotal(month, "Expense")).c_str());
+                    mvwprintw(stdscr, 0, 17, std::to_string(getAmountTotal(t_MONTH, "Expense")).c_str());
                     break;
                 case 1:
                     clearRefresh();
                     mvwprintw(stdscr, 0, 1, "You have made $");
-                    mvwprintw(stdscr, 0, 17, std::to_string(getAmountTotal(month, "Income")).c_str());
+                    mvwprintw(stdscr, 0, 17, std::to_string(getAmountTotal(t_MONTH, "Income")).c_str());
                     break;
                 case 2:
                     clearRefresh();
-                    float spent{getAmountTotal(month, "Expense")};
-                    float earned{getAmountTotal(month, "Income")};
+                    float spent{getAmountTotal(t_MONTH, "Expense")};
+                    float earned{getAmountTotal(t_MONTH, "Income")};
                     float left{earned-spent};
                     string stringLeft{std::to_string(left)};
                     mvwprintw(stdscr, 0, 1, "You have $");
@@ -191,13 +188,13 @@ void totalSpending(const int month)
     highlight = 0;
 }
 
-void menuInitilization(const std::vector<string> &arrChoice)
+void menuInitilization(const std::vector<string> &t_ARRCHOICE)
 {
-    auto size = arrChoice.size();
+    int size = t_ARRCHOICE.size();
     for(int i = 0; i < size; i++)
     {
         if(i == highlight) {wattron(stdscr, A_REVERSE);}
-        mvwprintw(stdscr, i+2, 1, arrChoice[i].c_str());
+        mvwprintw(stdscr, i+2, 1, t_ARRCHOICE[i].c_str());
         wattroff(stdscr, A_REVERSE);
     }
     choice = wgetch(stdscr);
@@ -221,14 +218,14 @@ void findEntry()
     clearRefresh();
     std::ifstream database("database.txt");
     string line;
-    char mesg[]="Enter the a keyword to search for (date[02-21-2021], type, etc): ";
+    constexpr char MESG[]="Enter the a keyword to search for (date[02-21-2021], type, etc): ";
     char find[80];
     echo();
-    mvprintw(0, 0, "%s", mesg);
+    mvprintw(0, 0, "%s", MESG);
     getstr(find);
     noecho();
     clearRefresh();
-    int n {0};
+    int n{0};
     while(getline(database, line))
     {
         if(line.find(find) != string::npos)
@@ -236,6 +233,10 @@ void findEntry()
             n++;
             mvwprintw(stdscr, n-1, 1, line.c_str());
         }   
+    }
+    if (n == 0)
+    {
+        mvwprintw(stdscr, n, 1, "No results were found.");
     }
     mvwprintw(stdscr, n+2, 1, "Press any key to continue...");
     getch();
@@ -247,9 +248,9 @@ void viewEntry()
 {
     highlight = 0;
     clearRefresh();
-    string line{};
+    string line;
     std::ifstream database("database.txt");
-    int n {0};
+    int n{0};
     while(true) {
         mvwprintw(stdscr, 0, 1, "Which entries would you like to see: ");
         menuInitilization(choicesViewEntry);
@@ -281,12 +282,12 @@ void viewEntry()
 }
 
 // Copied from stack overflow, its function is self-explanatory. 
-void eraseFileLine(const string path, const string eraseLine)
+void eraseFileLine(const string t_PATH, const string t_ERASELINE)
 {
     string line;
     std::ifstream fin;
     
-    fin.open(path);
+    fin.open(t_PATH);
     // contents of path must be copied to a temp file then
     // renamed back to the path file
     std::ofstream temp;
@@ -295,14 +296,14 @@ void eraseFileLine(const string path, const string eraseLine)
     while (getline(fin, line))
     {
         // write all lines to temp other than the line marked for erasing
-        if (line != eraseLine) {temp << line << std::endl;}
+        if (line != t_ERASELINE) {temp << line << std::endl;}
     }
 
     temp.close();
     fin.close();
 
     // required conversion for remove and rename functions
-    const char * p = path.c_str();
+    const char * p = t_PATH.c_str();
     remove(p);
     rename("temp.txt", p);
 }
@@ -314,10 +315,10 @@ void removeEntry()
     std::ifstream database("database.txt");
     string line;
     string var;
-    char mesg[]="Search for the entry you want to remove (type, category, amount, date [02-21-2021]): ";
+    constexpr char MESG[]="Search for the entry you want to remove (type, category, amount, date [02-21-2021]): ";
     char find[80];
     echo();
-    mvprintw(0, 0, "%s", mesg);
+    mvprintw(0, 0, "%s", MESG);
     getstr(find);
     noecho();
     while(getline(database, line))
@@ -364,10 +365,10 @@ void getSetAmount()
 {
     std::ofstream outputFile("outputFileName");
     std::ifstream inputFile("database.txt");
-    char mesg[]="Enter the Amount: ";
+    constexpr char MESG[]="Enter the Amount: ";
     char str[80];
     echo();
-    mvprintw(0, 0, "%s", mesg);
+    mvprintw(0, 0, "%s", MESG);
     getstr(str); 
     entry.setAmount(str);
     noecho();
@@ -381,7 +382,8 @@ void getSetAmount()
     // Sets the date and time
     entry.setDate(getCurrentDateTime() + '\n');
     // Writes to file
-    outputFile << entry.getType() << ", " << entry.getCategory() << ", " << "$" << entry.getAmount() << ", " << entry.getDescription() << ", " << entry.getDate();
+    outputFile << entry.getType() << ", " << entry.getCategory() << ", " << "$" 
+    << entry.getAmount() << ", " << entry.getDescription() << ", " << entry.getDate();
     outputFile << inputFile.rdbuf();
     inputFile.close();
     outputFile.close();
@@ -408,7 +410,6 @@ void setCategoryIncome()
                 break;
             case 108: 
                 entry.setCategory(choicesCategoryIncome[highlight]);
-                getch();
                 clearRefresh();
                 getSetAmount();
             case 104:
@@ -517,10 +518,10 @@ int main()
                             viewEntry();
                         case 3:
                             clearRefresh();
-                            char mesg[]="What month do you want to see a report for?(1, 2, 3, etc): ";
+                            constexpr char MESG[]="What month do you want to see a report for?(1, 2, 3, etc): ";
                             char find[2];
                             echo();
-                            mvprintw(0, 0, "%s", mesg);
+                            mvprintw(0, 0, "%s", MESG);
                             getstr(find);
                             noecho();
                             int x {std::stoi(find)};
