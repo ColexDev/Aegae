@@ -1,3 +1,3 @@
 all: main
 main: main.cpp
-	g++ -lncurses main.cpp -o mm
+	g++ main.cpp -o mm -lncurses
