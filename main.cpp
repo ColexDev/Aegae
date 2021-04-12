@@ -16,17 +16,17 @@ using std::getline;
 int main();
 void menuInitilization(const std::vector<string> &arrChoice);
 void addEntry();
-static int choice;
-static int highlight{0}; 
-static string token;
+int choice;
+int highlight{0}; 
+string token;
 
-static std::vector<string> choicesMain {"Add an Entry", "Remove an Entry", "View an Entry", "Reports"};
-static std::vector<string> choicesType {"Expense", "Income"};
+const std::vector<string> choicesMain {"Add an Entry", "Remove an Entry", "View an Entry", "Reports"};
+const std::vector<string> choicesType {"Expense", "Income"};
 /* Edit the two below to add/delete category options */
-static std::vector<string> choicesCategoryExpense {"Food", "Transportation", "Entertainment", "Other"};
-static std::vector<string> choicesCategoryIncome {"Salary", "Sale", "Gift", "Other"};
-static std::vector<string> choicesViewEntry {"All", "Specific"};
-static std::vector<string> choicesTotalSpending {"Total Spending", "Total Income", "Money Left"};
+const std::vector<string> choicesCategoryExpense {"Food", "Transportation", "Entertainment", "Other"};
+const std::vector<string> choicesCategoryIncome {"Salary", "Sale", "Gift", "Other"};
+const std::vector<string> choicesViewEntry {"All", "Specific"};
+const std::vector<string> choicesTotalSpending {"Total Spending", "Total Income", "Money Left"};
 
 // Entry class for storing temp values
 class Entry
@@ -51,6 +51,8 @@ public:
     string getDate() {return m_date;}
     string getDescription() {return m_description;}
 };
+
+const std::vector<string> months {"January", "Feburary", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
 
 Entry entry;
 
@@ -127,65 +129,69 @@ string getType(string &t_line)
     return type;
 }
 
-float getAmountTotal(const int t_MONTH, const string t_TYPE)
+string getCategory(string &t_line)
+{
+    string category;
+    std::istringstream ss(t_line);
+    getline(ss, category, ',');
+    getline(ss, category, ',');
+    return category;
+}
+
+float getAmountTotal(const int t_MONTH, const string t_TYPE, const string t_CATEGORY)
 {
     std::ifstream database("database.txt");
     string line;
     int date;
     string type;
     float amount {0};
-    while(getline(database, line))
+    if (t_CATEGORY == "All")
     {
-        type = getType(line);
-        if (type == t_TYPE && t_MONTH == getTimeFrame(line))
+        while(getline(database, line))
         {
-            amount += getAmountLine(line);
+            type = getType(line);
+            if (type == t_TYPE && t_MONTH == getTimeFrame(line))
+            {
+                amount += getAmountLine(line);
+            } 
         } 
+    } else {
+        while(getline(database, line))
+        {
+            type = getType(line);
+            if (type == t_TYPE && t_MONTH == getTimeFrame(line) && t_CATEGORY == getCategory(line))
+            {
+            amount += getAmountLine(line);
+            } 
+        }
     }
+
 string numAmount {std::to_string(amount)};
 return amount;
 }
 
 void totalSpending(const int t_MONTH)
 {
-    highlight = 0;
+    // TO-DO: Find % of spending and income for each
     clearRefresh();
-    while(true)
-    {
-        mvwprintw(stdscr, 0, 1, "Which would you like to see: ");
-        menuInitilization(choicesTotalSpending);
-        if (choice == 108)
-        {
-            switch (highlight)
-            {
-                case 0:
-                    clearRefresh();
-                    mvwprintw(stdscr, 0, 1, "You have spent $");
-                    mvwprintw(stdscr, 0, 17, std::to_string(getAmountTotal(t_MONTH, "Expense")).c_str());
-                    break;
-                case 1:
-                    clearRefresh();
-                    mvwprintw(stdscr, 0, 1, "You have made $");
-                    mvwprintw(stdscr, 0, 17, std::to_string(getAmountTotal(t_MONTH, "Income")).c_str());
-                    break;
-                case 2:
-                    clearRefresh();
-                    float spent{getAmountTotal(t_MONTH, "Expense")};
-                    float earned{getAmountTotal(t_MONTH, "Income")};
-                    float left{earned-spent};
-                    string stringLeft{std::to_string(left)};
-                    mvwprintw(stdscr, 0, 1, "You have $");
-                    mvwprintw(stdscr, 0, 11, stringLeft.c_str());
-                    mvwprintw(stdscr, 0, stringLeft.length() + 11, " left after your expenses");
-                    break;
-            }
-            break;       
-        }
-    }
-    mvwprintw(stdscr, 2, 1, "Press any key to continue...");
+    mvwprintw(stdscr, 0, 1, "Expense Report for "); mvwprintw(stdscr, 0, 20, months[t_MONTH - 1].c_str());
+    mvwprintw(stdscr, 2, 1, "You have spent $");
+    mvwprintw(stdscr, 2, 17, std::to_string(getAmountTotal(t_MONTH, "Expense", "All")).c_str());
+    
+    mvwprintw(stdscr, 4, 1, "You have made $");
+    mvwprintw(stdscr, 4, 16, std::to_string(getAmountTotal(t_MONTH, "Income", "All")).c_str());
+
+    float spent{getAmountTotal(t_MONTH, "Expense", "All")};
+    float earned{getAmountTotal(t_MONTH, "Income", "All")};
+    float left{earned-spent};
+    string stringLeft{std::to_string(left)};
+    mvwprintw(stdscr, 6, 1, "You have $");
+    mvwprintw(stdscr, 6, 11, stringLeft.c_str());
+    mvwprintw(stdscr, 6, stringLeft.length() + 11, " left after your expenses for the month");  
+    
+    mvwprintw(stdscr, 8, 1, "Press any key to continue...");
     getch();
     clearRefresh();
-    highlight = 0;
 }
 
 void menuInitilization(const std::vector<string> &t_ARRCHOICE)
