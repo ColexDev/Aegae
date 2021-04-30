@@ -1,4 +1,4 @@
-# moneyManager
+# Aegae
 A simple CLI application to manage money
 
 Work in progress
