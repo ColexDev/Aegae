@@ -1,4 +1,4 @@
-# moneyManager
+# Corcyra
 A simple CLI application to manage money
 
 Work in progress
@@ -9,8 +9,8 @@ Work in progress
 
 ## Installation
 ```
-$ git clone https://github.com/ColexDev/moneyManager
-$ cd moneyManager
+$ git clone https://github.com/ColexDev/Corcyra
+$ cd Corcyra
 $ make
 ```
-It will be installed and can be started by typing ./mm while in the folder.
+It will be installed and can be started by typing ./Corcyra while in the folder.
