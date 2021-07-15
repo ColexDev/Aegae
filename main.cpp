@@ -5,6 +5,7 @@
 #include <vector>
 #include "get.h"
 #include "file.h"
+#include "table.h"
 
 
 int keyPress;
@@ -16,6 +17,7 @@ const std::vector<std::string> CHOICESTYPE {"Expense", "Income"};
 const std::vector<std::string> CHOICESTOTALSPENDING {"Total Spending", "Total Income", "Money Left"};
 const std::vector<std::string> CHOICESVIEWENTRY {"All", "Specific"};
 std::vector<std::string> allEntries;
+std::vector<std::string> allEntriesSpaces;
 /* Edit the two below to add/delete category options */
 const std::vector<std::string> CHOICESCATEGORYEXPENSE {"Food", "Transportation", "Entertainment", "Other"};
 const std::vector<std::string> CHOICESCATEGORYINCOME {"Salary", "Sale", "Gift", "Other"};
@@ -46,20 +48,18 @@ public:
 
 const std::vector<std::string> months {"January", "Feburary", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
 
-static int longestDate = 0;
-static int longestType = 0;
-static int longestCategory = 0;
-static int longestAmount = 0;
-static int longestDescription = 0;
+int longestDate;
+int longestType;
+int longestCategory;
+int longestAmount;
+int longestDescription;
 
 int main();
-void writeTable(std::string &par_line, int &par_lineNumber);
-void menuInitilization(const std::vector<std::string> &arrChoice);
+void menuInitilization(const std::vector<std::string> &arrChoice, int direction, int xStarxStart, int yStart);
 void addEntry();
 Entry entry;
 
 void clearRefresh(){ wclear(stdscr); wrefresh(stdscr); }
-
 
 char *strdup(const char *src_str) noexcept {
     char *new_str = new char[std::strlen(src_str) + 1];
@@ -67,111 +67,16 @@ char *strdup(const char *src_str) noexcept {
     return new_str;
 }
 
-// Get number of entries
-/*string listNumEntries()
-{
-    ifstream database("database.txt");
-    string choice;
-    cout << "Would you like to view all entries or see the number of entries? [a or n]: " << endl;
-    cin >> choice;
-    int count = 0;
-    string item;
-    while(!database.eof())
-    {
-        database >> item;
-        count++;
-        if(choice == "a")
-        {
-            cout << item << endl;
-        }
-
-    }
-    string r = count + " entries found!";
-    return r;
-    database.close();
-}*/
-
-
-void find_longest()
-{
-    write_database_to_vector();
-    for (auto entry : allEntries) {
-        int date = getDate(entry).length();
-        int type = getType(entry).length();
-        int category = getCategory(entry).length();
-        int amount = getAmountLineString(entry).length();
-        int description = getDescription(entry).length();
-        if (date > longestDate) {
-            longestDate = date;
-        }
-        if (type > longestType) {
-            longestType = type;
-        }
-        if (category > longestCategory) {
-            longestCategory = category;
-        }
-        if (amount > longestAmount) {
-            longestAmount = amount;
-        }
-        if(description > longestDescription) {
-            longestDescription = description;
-        }
-    }
-}
-
-void draw_table(std::string &par_line, int &par_lineNumber)
-{
-    int print = 13;
-    int print2 = 0;
-    /* Header */
-    find_longest();
-    mvprintw(1, 1, "Date");
-    mvprintw(2, 1, "----------");
-    mvprintw(1, print, "Type");
-    print = print + longestType + 3;
-    mvprintw(2, 13, "-------");
-    mvprintw(1, print + 1, "Category");
-
-    print2 = print + 1;
-    for (int i = 0; i < longestCategory - 1; i++) {
-        mvprintw(2, print2 + i, "-");
-    }
-    print = print + longestCategory + 3;
-
-    mvprintw(1, print, "Amount");
-    for (int i = 0; i < longestAmount; i++) {
-        mvprintw(2, print + i, "-");
-    }
-    print = print + longestAmount + 3;
-
-    print2 = print + 1;
-    mvprintw(1, print + 1, "Description");
-    for (int i = 0; i < longestDescription - 1; i++) {
-        mvprintw(2, print2 + i, "-");
-    }
-
-    int entryNumber = 3;
-    for (auto entry : allEntries) {
-        print = 13;
-        mvprintw(entryNumber, 0, getDate(entry).c_str());
-        mvprintw(entryNumber, print, getType(entry).c_str());
-        print = print + longestType + 3;
-        mvprintw(entryNumber, print, getCategory(entry).c_str());
-        print = print + longestCategory + 3;
-        mvprintw(entryNumber, print, getAmountLineString(entry).c_str());
-        print = print + longestAmount + 3;
-        mvprintw(entryNumber, print, getDescription(entry).c_str());
-        entryNumber++;
-    }
-    getch();
-}
-
-void menuInitilization(const std::vector<std::string> &par_ARRCHOICE)
+void menuInitilization(const std::vector<std::string> &par_ARRCHOICE, int direction, int xStart, int yStart)
 {
     int size = par_ARRCHOICE.size();
     for(int i = 0; i < size; i++) {
         if(i == highlight) {wattron(stdscr, A_REVERSE);}
-        mvwprintw(stdscr, i+2, 1, par_ARRCHOICE[i].c_str());
+        if (direction == 1) {
+            mvwprintw(stdscr, i+xStart, yStart, par_ARRCHOICE[i].c_str());
+        } else {
+            mvwprintw(stdscr, 1, i, par_ARRCHOICE[i].c_str());
+        }
         wattroff(stdscr, A_REVERSE);
     }
     keyPress = wgetch(stdscr);
@@ -226,7 +131,7 @@ void viewEntry()
     int lineNumber = 0;
     while(true) {
         mvwprintw(stdscr, 0, 1, "Which entries would you like to see: ");
-        menuInitilization(CHOICESVIEWENTRY);
+        menuInitilization(CHOICESVIEWENTRY, 1, 2, 1);
         if(keyPress == 108) {
             switch (highlight) {
                 case 0:
@@ -302,6 +207,9 @@ void getSetAmount()
     getstr(desc);
     noecho();
     entry.setDescription(desc);
+    if (strlen(desc) == 0) {
+        entry.setDescription("None");
+    }
     // Sets the date and time
     // entry.setDate(getCurrentDateTime() + '\n');
     entry.setDate(getCurrentDateTime());
@@ -325,7 +233,7 @@ void setCategoryIncome()
     while(true) {
         clearRefresh();
         mvwprintw(stdscr, 0, 1, "What was it from ");
-        menuInitilization(CHOICESCATEGORYINCOME);
+        menuInitilization(CHOICESCATEGORYINCOME, 1, 2, 1);
         switch(keyPress) {
             case 113:
                 clearRefresh();
@@ -348,7 +256,7 @@ void setCategoryExpense()
     while(true) {
         clearRefresh();
         mvwprintw(stdscr, 0, 1, "What was it spent on: ");
-        menuInitilization(CHOICESCATEGORYEXPENSE);
+        menuInitilization(CHOICESCATEGORYEXPENSE, 1, 2, 1);
         switch(keyPress) {
             case 113:
                 clearRefresh();
@@ -370,7 +278,7 @@ void addEntry()
     highlight = 0;
     while(true) {
         mvwprintw(stdscr, 0, 1, "Please Select the Category: ");
-        menuInitilization(CHOICESTYPE);
+        menuInitilization(CHOICESTYPE, 1, 2, 1);
         switch(keyPress) {
             case 108:
                 clearRefresh();
@@ -417,7 +325,7 @@ int main()
         while(true) {
             curs_set(0);
             mvwprintw(stdscr, 0, 1, "Please Select an Option: ");
-            menuInitilization(CHOICESMAIN);
+            menuInitilization(CHOICESMAIN, 1, 2, 1);
             switch (keyPress) {
                 case 108:
                     clearRefresh();
