@@ -23,7 +23,6 @@ void find_longest()
     longestCategory = 0;
     longestAmount = 0;
     longestDescription = 0;
-    write_database_to_vector();
     for (auto entry : allEntries) {
         int date = getDate(entry).length();
         int type = getType(entry).length();
@@ -64,6 +63,7 @@ int find_number_of_spaces(std::string current, int longest)
 
 void fill_all_entries_no_spaces()
 {
+    allEntriesSpaces.clear();
     int print = 2;
     std::string pushBack;
     find_longest();
@@ -79,43 +79,40 @@ void fill_all_entries_no_spaces()
         std::string description = getDescription(entry);
         pushBack = pushBack + add_space_after(description, find_number_of_spaces(description, longestDescription));
 
-
         allEntriesSpaces.push_back(pushBack);
     }
 }
 
-void draw_table(std::string &par_line, int par_lineNumber)
+void draw_table()
 {
     int print = 13;
     int print2 = 0;
     find_longest();
+    /* Keybinds */
+    mvprintw(0, 1, "q = Quit; n = New Entry; r = Remove Selected Entry");
     /* Header */
-    mvprintw(1, 1, "Date");
-    mvprintw(2, 1, "----------");
-    mvprintw(1, print, "Type");
+    mvprintw(2, 1, "Date");
+    mvprintw(3, 1, "----------");
+    mvprintw(2, print, "Type");
     print = print + longestType + 3;
-    mvprintw(2, 13, "-------");
-    mvprintw(1, print, "Category");
+    mvprintw(3, 13, "-------");
+    mvprintw(2, print, "Category");
 
     print2 = print;
     for (int i = 0; i < longestCategory - 1; i++) {
-        mvprintw(2, print2 + i, "-");
+        mvprintw(3, print2 + i, "-");
     }
     print = print + longestCategory + 2;
 
-    mvprintw(1, print, "Amount");
+    mvprintw(2, print, "Amount");
     for (int i = 0; i < longestAmount; i++) {
-        mvprintw(2, print + i, "-");
+        mvprintw(3, print + i, "-");
     }
     print = print + longestAmount + 3;
 
     print2 = print ;
-    mvprintw(1, print, "Description");
+    mvprintw(2, print, "Description");
     for (int i = 0; i < longestDescription - 1; i++) {
-        mvprintw(2, print2 + i, "-");
-    }
-    fill_all_entries_no_spaces();
-    while (true) {
-        menuInitilization(allEntriesSpaces, 1, 3, 0);
+        mvprintw(3, print2 + i, "-");
     }
 }

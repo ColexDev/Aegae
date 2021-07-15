@@ -100,15 +100,15 @@ void findEntry()
     std::ifstream database("database.txt");
     std::string line;
     constexpr char MESG[]="Enter the a keyword to search for (date[02-21-2021], type, etc): ";
-    char token[80];
+    char token_[80];
     echo();
     mvprintw(0, 0, "%s", MESG);
-    getstr(token);
+    getstr(token_);
     noecho();
     clearRefresh();
     int numResults = 0;
     while(std::getline(database, line)) {
-        if(line.find(token) != std::string::npos) {
+        if(line.find(token_) != std::string::npos) {
             numResults++;
             mvwprintw(stdscr, numResults-1, 1, line.c_str());
         }
@@ -137,7 +137,7 @@ void viewEntry()
                 case 0:
                     clearRefresh();
                     endwin();
-                    draw_table(line, lineNumber);
+                    draw_table();
                     break;
                 case 1:
                     clearRefresh();
@@ -154,30 +154,26 @@ void viewEntry()
 // Deletes a specific entry
 void removeEntry()
 {
-    std::ofstream outputFile("outputFileName");
+//    std::ofstream outputFile("outputFileName");
     std::ifstream database("database.txt");
     std::string line;
     std::string eraseLine;
-    constexpr char MESG[]="Search for the entry you want to remove (type, category, amount, date [02-21-2021]): ";
+    /* constexpr char MESG[]="Search for the entry you want to remove (type, category, amount, date [02-21-2021]): ";
     char token[80];
     echo();
     mvprintw(0, 0, "%s", MESG);
     getstr(token);
-    noecho();
+    noecho(); */
     while(std::getline(database, line)) {
-        if(line.find(token) != std::string::npos) {
+        if(line.find(allEntries[highlight]) != std::string::npos) {
             eraseLine = line;
-            clearRefresh();
-            mvwprintw(stdscr, 2, 1, line.c_str());
-            echo();
-            mvwprintw(stdscr, 0, 1, "Is this the line you want to delete[y/n]: ");
+            attron(A_BOLD);
+            mvwprintw(stdscr, allEntries.size() + 5, 0, "Are you sure you want to DELETE this entry? [y/n]");
+            attroff(A_BOLD);
             keyPress = getch();
-            noecho();
             if (keyPress == 121) {
                 eraseFileLine("database.txt", eraseLine);
-                highlight = 0;
                 main();
-                clearRefresh();
                 break;
             } else {
                 continue;
@@ -198,7 +194,12 @@ void getSetAmount()
     echo();
     mvprintw(0, 0, "%s", MESG);
     getstr(str);
-    entry.setAmount(str);
+    std::string str2 = str;
+    if (str2.find(".") != std::string::npos) {
+    } else {
+        str2 = str2 + ".00";
+    }
+    entry.setAmount(str2);
     noecho();
     char msg[]="Enter a Description (Press enter for none): ";
     char desc[80];
@@ -236,8 +237,8 @@ void setCategoryIncome()
         menuInitilization(CHOICESCATEGORYINCOME, 1, 2, 1);
         switch(keyPress) {
             case 113:
-                clearRefresh();
-                break;
+                endwin();
+                exit(1);
             case 108:
                 entry.setCategory(CHOICESCATEGORYINCOME[highlight]);
                 clearRefresh();
@@ -259,8 +260,8 @@ void setCategoryExpense()
         menuInitilization(CHOICESCATEGORYEXPENSE, 1, 2, 1);
         switch(keyPress) {
             case 113:
-                clearRefresh();
-                break;
+                endwin();
+                exit(1);
             case 108:
                 entry.setCategory(CHOICESCATEGORYEXPENSE[highlight]);
                 clearRefresh();
@@ -291,6 +292,9 @@ void addEntry()
                 main();
                 clearRefresh();
                 break;
+            case 113:
+                endwin();
+                exit(1);
         }
     }
 
@@ -301,6 +305,8 @@ void addEntry()
 // MAKE AN EXPENSE SHEET, HAVE IT SHOW ALL MONTHS AND YEARLY TOO
 int main()
 {
+    write_database_to_vector();
+    fill_all_entries_no_spaces();
     static bool firstRun{false};
     clearRefresh();
     highlight = 0;
@@ -322,38 +328,19 @@ int main()
         }
             firstRun = true;
     }
-        while(true) {
-            curs_set(0);
-            mvwprintw(stdscr, 0, 1, "Please Select an Option: ");
-            menuInitilization(CHOICESMAIN, 1, 2, 1);
-            switch (keyPress) {
-                case 108:
-                    clearRefresh();
-                    switch (highlight) {
-                        case 0:
-                            clearRefresh();
-                            addEntry();
-                        case 1:
-                            clearRefresh();
-                            removeEntry();
-                        case 2:
-                            clearRefresh();
-                            viewEntry();
-                        case 3:
-                            clearRefresh();
-                            constexpr char MESG[]="What month do you want to see a report for?(1, 2, 3, etc): ";
-                            char find[2];
-                            echo();
-                            mvprintw(0, 0, "%s", MESG);
-                            getstr(find);
-                            noecho();
-                            int x {std::stoi(find)};
-//                            totalSpending(x);
-                    }
-               case 113:
-                    endwin();
-                    exit(1);
-
-            }
+    draw_table();
+    while(true) {
+        curs_set(0);
+        menuInitilization(allEntriesSpaces, 1, 4, 0);
+        switch (keyPress) {
+        case 110:
+            clearRefresh();
+            addEntry();
+        case 114:
+            removeEntry();
+        case 113:
+            endwin();
+            exit(1);
         }
+    }
 }
