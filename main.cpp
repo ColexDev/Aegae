@@ -59,6 +59,7 @@ int main();
 void menuInitilization(const std::vector<std::string> &arrChoice, int direction, int xStarxStart, int yStart);
 void find_entry();
 void addEntry();
+void filter_results();
 Entry entry;
 
 void clearRefresh(){ wclear(stdscr); wrefresh(stdscr); }
@@ -257,14 +258,9 @@ void addEntry()
     }
 
 }
-
-void filter_results()
-{
-
-}
-
 void setup_menu(std::vector<std::string> &vec)
 {
+    highlight = 0;
     clearRefresh();
     draw_table();
     while(true) {
@@ -290,6 +286,29 @@ void setup_menu(std::vector<std::string> &vec)
         }
     }
 }
+
+void filter_results()
+{
+    specificMonthEntries.clear();
+    int month;
+    clearRefresh();
+    mvprintw(0, 1, "Which month would you like to see?");
+    highlight = 0;
+    while (true) {
+        menuInitilization(months, 1, 2, 1);
+        switch (keyPress) {
+        case 108:
+            month = highlight + 1;
+            for (auto entry : allEntriesSpaces) {
+                if (getTimeFrame(entry) == month) {
+                    specificMonthEntries.push_back(entry);
+                }
+            }
+    setup_menu(specificMonthEntries);
+        }
+    }
+}
+
 
 void find_entry()
 {
