@@ -89,7 +89,7 @@ void draw_table()
     int print2 = 0;
     find_longest();
     /* Keybinds */
-    mvprintw(0, 1, "q = Quit; n = New Entry; r = Remove Selected Entry");
+    mvprintw(0, 1, "q = Quit; n = New Entry; x = Remove Selected Entry; / = Search");
     /* Header */
     mvprintw(2, 1, "Date");
     mvprintw(3, 1, "----------");

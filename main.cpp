@@ -3,6 +3,7 @@
 #include <cstring>
 #include <fstream>
 #include <vector>
+
 #include "get.h"
 #include "file.h"
 #include "table.h"
@@ -12,11 +13,10 @@ int keyPress;
 int highlight;
 std::string token;
 
-const std::vector<std::string> CHOICESMAIN {"Add an Entry", "Remove an Entry", "View an Entry", "Reports"};
 const std::vector<std::string> CHOICESTYPE {"Expense", "Income"};
-const std::vector<std::string> CHOICESTOTALSPENDING {"Total Spending", "Total Income", "Money Left"};
 const std::vector<std::string> CHOICESVIEWENTRY {"All", "Specific"};
 std::vector<std::string> allEntries;
+std::vector<std::string> foundEntries;
 std::vector<std::string> allEntriesSpaces;
 /* Edit the two below to add/delete category options */
 const std::vector<std::string> CHOICESCATEGORYEXPENSE {"Food", "Transportation", "Entertainment", "Other"};
@@ -56,16 +56,11 @@ int longestDescription;
 
 int main();
 void menuInitilization(const std::vector<std::string> &arrChoice, int direction, int xStarxStart, int yStart);
+void find_entry();
 void addEntry();
 Entry entry;
 
 void clearRefresh(){ wclear(stdscr); wrefresh(stdscr); }
-
-char *strdup(const char *src_str) noexcept {
-    char *new_str = new char[std::strlen(src_str) + 1];
-    std::strcpy(new_str, src_str);
-    return new_str;
-}
 
 void menuInitilization(const std::vector<std::string> &par_ARRCHOICE, int direction, int xStart, int yStart)
 {
@@ -121,7 +116,6 @@ void findEntry()
     clearRefresh();
 }
 
-// Get an entry from the date that the user enters
 void viewEntry()
 {
     highlight = 0;
@@ -150,25 +144,16 @@ void viewEntry()
     main();
 }
 
-
-// Deletes a specific entry
 void removeEntry()
 {
-//    std::ofstream outputFile("outputFileName");
     std::ifstream database("database.txt");
     std::string line;
     std::string eraseLine;
-    /* constexpr char MESG[]="Search for the entry you want to remove (type, category, amount, date [02-21-2021]): ";
-    char token[80];
-    echo();
-    mvprintw(0, 0, "%s", MESG);
-    getstr(token);
-    noecho(); */
     while(std::getline(database, line)) {
         if(line.find(allEntries[highlight]) != std::string::npos) {
             eraseLine = line;
             attron(A_BOLD);
-            mvwprintw(stdscr, allEntries.size() + 5, 0, "Are you sure you want to DELETE this entry? [y/n]");
+            mvwprintw(stdscr, allEntries.size() + 5, 0, "Are you sure you want to DELETE this entry? [Y/n]");
             attroff(A_BOLD);
             keyPress = getch();
             if (keyPress == 121) {
@@ -180,9 +165,7 @@ void removeEntry()
             }
         }
     }
-    clearRefresh();
 }
-
 
 // This does too much based off its name
 void getSetAmount()
@@ -300,9 +283,63 @@ void addEntry()
 
 }
 
+void setup_menu(std::vector<std::string> &vec)
+{
+    clearRefresh();
+    draw_table();
+    while(true) {
+        curs_set(0);
+        menuInitilization(vec, 1, 4, 0);
+        switch (keyPress) {
+        case 110:
+            clearRefresh();
+            addEntry();
+        case 120:
+            removeEntry();
+            setup_menu(allEntriesSpaces);
+        case 47:
+            find_entry();
+            break;
+        case 27:
+            setup_menu(allEntriesSpaces);
+        case 113:
+            endwin();
+            exit(1);
+        }
+    }
+}
+
+void find_entry()
+{
+    foundEntries.clear();
+    int row, col;
+    int numEntries = 0;
+    char token[80];
+    getmaxyx(stdscr, row, col);
+    mvprintw(row - 1, 1, "/");
+    echo();
+    move(row - 1, 2);
+    getstr(token);
+    noecho();
+    for (auto entry : allEntriesSpaces) {
+        if (entry.find(token) != std::string::npos) {
+            numEntries++;
+            foundEntries.push_back(entry);
+        }
+    }
+    if (numEntries == 0) {
+        attron(A_BOLD);
+        mvprintw(row - 2, 1, "No results were found");
+        attroff(A_BOLD);
+    } else {
+        clearRefresh();
+    }
+    draw_table();
+    highlight = 0;
+    setup_menu(foundEntries);
+}
 
 
-// MAKE AN EXPENSE SHEET, HAVE IT SHOW ALL MONTHS AND YEARLY TOO
 int main()
 {
     write_database_to_vector();
@@ -328,19 +365,5 @@ int main()
         }
             firstRun = true;
     }
-    draw_table();
-    while(true) {
-        curs_set(0);
-        menuInitilization(allEntriesSpaces, 1, 4, 0);
-        switch (keyPress) {
-        case 110:
-            clearRefresh();
-            addEntry();
-        case 114:
-            removeEntry();
-        case 113:
-            endwin();
-            exit(1);
-        }
-    }
+    setup_menu(allEntriesSpaces);
 }
