@@ -18,6 +18,7 @@ const std::vector<std::string> CHOICESVIEWENTRY {"All", "Specific"};
 std::vector<std::string> allEntries;
 std::vector<std::string> foundEntries;
 std::vector<std::string> allEntriesSpaces;
+std::vector<std::string> specificMonthEntries;
 /* Edit the two below to add/delete category options */
 const std::vector<std::string> CHOICESCATEGORYEXPENSE {"Food", "Transportation", "Entertainment", "Other"};
 const std::vector<std::string> CHOICESCATEGORYINCOME {"Salary", "Sale", "Gift", "Other"};
@@ -88,34 +89,7 @@ void menuInitilization(const std::vector<std::string> &par_ARRCHOICE, int direct
                 break;
     }
 }
-
-void findEntry()
-{
-    clearRefresh();
-    std::ifstream database("database.txt");
-    std::string line;
-    constexpr char MESG[]="Enter the a keyword to search for (date[02-21-2021], type, etc): ";
-    char token_[80];
-    echo();
-    mvprintw(0, 0, "%s", MESG);
-    getstr(token_);
-    noecho();
-    clearRefresh();
-    int numResults = 0;
-    while(std::getline(database, line)) {
-        if(line.find(token_) != std::string::npos) {
-            numResults++;
-            mvwprintw(stdscr, numResults-1, 1, line.c_str());
-        }
-    }
-    if (numResults == 0) {
-        mvwprintw(stdscr, numResults, 1, "No results were found.");
-    }
-    mvwprintw(stdscr, numResults+2, 1, "Press any key to continue...");
-    getch();
-    clearRefresh();
-}
-
+/*
 void viewEntry()
 {
     highlight = 0;
@@ -143,6 +117,7 @@ void viewEntry()
     highlight = 0;
     main();
 }
+*/
 
 void removeEntry()
 {
@@ -283,6 +258,11 @@ void addEntry()
 
 }
 
+void filter_results()
+{
+
+}
+
 void setup_menu(std::vector<std::string> &vec)
 {
     clearRefresh();
@@ -300,6 +280,8 @@ void setup_menu(std::vector<std::string> &vec)
         case 47:
             find_entry();
             break;
+        case 102:
+            filter_results();
         case 27:
             setup_menu(allEntriesSpaces);
         case 113:
@@ -344,7 +326,7 @@ int main()
 {
     write_database_to_vector();
     fill_all_entries_no_spaces();
-    static bool firstRun{false};
+    static bool firstRun = false;
     clearRefresh();
     highlight = 0;
     setlocale(LC_ALL, "");
@@ -352,6 +334,7 @@ int main()
     cbreak();
     noecho();
     keypad(stdscr, true);
+    /*
     if(firstRun == false) {
         while(true) {
             wattron(stdscr, A_BOLD);
@@ -365,5 +348,6 @@ int main()
         }
             firstRun = true;
     }
+    */
     setup_menu(allEntriesSpaces);
 }
