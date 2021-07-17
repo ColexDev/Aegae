@@ -4,12 +4,23 @@
 #include <sstream>
 extern std::string token;
 
+std::string getDate(std::string &par_line)
+{
+    std::string date;
+    std::istringstream ss_line(par_line);
+    std::getline(ss_line, date, ',');
+    std::getline(ss_line, date, ',');
+    std::getline(ss_line, date, ',');
+    std::getline(ss_line, date, ',');
+    std::getline(ss_line, date, ',');
+    return date;
+}
+
 // RETURNS THE MONTH (1, 2, 3, ETC)
 int getTimeFrame(std::string &par_line)
 {
-    std::istringstream ss_line(par_line);
-    while(std::getline(ss_line, token, ',')){}
-    std::istringstream ss_token(token);
+    std::string date = getDate(par_line);
+    std::istringstream ss_token(date);
     std::getline(ss_token, token, '-' );
     return stoi(token);
 }
@@ -59,17 +70,6 @@ std::string getCategory(std::string &par_line)
     return category;
 }
 
-std::string getDate(std::string &par_line)
-{
-    std::string date;
-    std::istringstream ss_line(par_line);
-    std::getline(ss_line, date, ',');
-    std::getline(ss_line, date, ',');
-    std::getline(ss_line, date, ',');
-    std::getline(ss_line, date, ',');
-    std::getline(ss_line, date, ',');
-    return date;
-}
 
 std::string getDescription(std::string &par_line)
 {

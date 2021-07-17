@@ -3,6 +3,7 @@
 #include <cstring>
 #include <fstream>
 #include <vector>
+#include <sstream>
 
 #include "get.h"
 #include "file.h"
@@ -12,6 +13,8 @@
 int keyPress;
 int highlight;
 std::string token;
+float amount = 0;
+int numEntries = 0;
 
 const std::vector<std::string> CHOICESTYPE {"Expense", "Income"};
 const std::vector<std::string> CHOICESVIEWENTRY {"All", "Specific"};
@@ -258,11 +261,27 @@ void addEntry()
     }
 
 }
+
+void calculate_money_left_over(std::string &par_line)
+{
+    if (getType(par_line) == "Expense") {
+        amount = amount - getAmountLine(par_line);
+    } else {
+        amount = amount + getAmountLine(par_line);
+    }
+}
+
 void setup_menu(std::vector<std::string> &vec)
 {
     highlight = 0;
     clearRefresh();
-    draw_table();
+    draw_header();
+    std::ostringstream ss;
+    ss << amount;
+    std::string amountString(ss.str());
+    std::string print = "Total money left over: $" + amountString;
+    mvprintw(numEntries + 5, 1, print.c_str());
+    numEntries = 0;
     while(true) {
         curs_set(0);
         menuInitilization(vec, 1, 4, 0);
@@ -287,6 +306,7 @@ void setup_menu(std::vector<std::string> &vec)
     }
 }
 
+
 void filter_results()
 {
     specificMonthEntries.clear();
@@ -302,6 +322,12 @@ void filter_results()
             for (auto entry : allEntriesSpaces) {
                 if (getTimeFrame(entry) == month) {
                     specificMonthEntries.push_back(entry);
+                    numEntries++;
+                }
+            }
+            for (auto entry : allEntries) {
+                if (getTimeFrame(entry) == month) {
+                    calculate_money_left_over(entry);
                 }
             }
     setup_menu(specificMonthEntries);
@@ -314,7 +340,6 @@ void find_entry()
 {
     foundEntries.clear();
     int row, col;
-    int numEntries = 0;
     char token[80];
     getmaxyx(stdscr, row, col);
     mvprintw(row - 1, 1, "/");
@@ -335,7 +360,7 @@ void find_entry()
     } else {
         clearRefresh();
     }
-    draw_table();
+    draw_header();
     highlight = 0;
     setup_menu(foundEntries);
 }
