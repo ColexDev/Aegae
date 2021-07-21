@@ -16,7 +16,6 @@ extern std::vector<std::string> allEntries;
 extern std::vector<std::string> allEntriesSpaces;
 extern std::vector<std::string> specificMonthEntries;
 void menuInitilization(const std::vector<std::string> &par_ARRCHOICE, int direction, int xStart, int yStart);
-void calculate_money_left_over(std::vector<std::string> &vec);
 
 void find_longest()
 {
@@ -96,7 +95,6 @@ void fill_all_entries_no_spaces()
 
         allEntriesSpaces.push_back(pushBack);
     }
-    calculate_money_left_over(allEntries);
 }
 
 /* Change this to all be dynamic for code readability (Change the first 2 printings of the bars) */

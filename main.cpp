@@ -12,6 +12,7 @@
 
 
 int keyPress;
+int month;
 int highlight;
 std::string token;
 float amount = 0;
@@ -282,7 +283,7 @@ void calculate_money_left_over(std::vector<std::string> &vec)
         if (get_type(entry) == "Debit") {
             amount = amount - get_amount_line_float(entry);
         } else {
-                amount = amount + get_amount_line_float(entry);
+            amount = amount + get_amount_line_float(entry);
         }
     }
 }
@@ -291,6 +292,11 @@ void setup_menu(std::vector<std::string> &vec)
 {
     clearRefresh();
     draw_header(vec);
+    if (vec.size() == allEntriesSpaces.size()) {
+        calculate_money_left_over(allEntries);
+    } else {
+        calculate_money_left_over_month(allEntries, month);
+    }
     numEntries = vec.size();
     highlight = 0;
     std::ostringstream ss;
@@ -327,11 +333,11 @@ void setup_menu(std::vector<std::string> &vec)
 /* REMOVE NUMENTRIES FROM THIS */
 void filter_results()
 {
-    int month;
     clearRefresh();
     mvprintw(0, 1, "Which month would you like to see?");
     highlight = 0;
     amount = 0;
+    calculate_money_left_over_month(allEntries, month);
     while (true) {
         menuInitilization(months, 1, 2, 1);
         switch (keyPress) {
@@ -343,7 +349,6 @@ void filter_results()
                     numEntries++;
                 }
             }
-            calculate_money_left_over_month(allEntries, month);
     setup_menu(specificMonthEntries);
         }
     }
