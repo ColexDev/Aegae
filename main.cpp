@@ -8,6 +8,7 @@
 #include "get.h"
 #include "file.h"
 #include "table.h"
+#include "def.h"
 
 
 int keyPress;
@@ -16,7 +17,7 @@ std::string token;
 float amount = 0;
 int numEntries = 0;
 
-const std::vector<std::string> CHOICESTYPE {"Expense", "Income"};
+const std::vector<std::string> CHOICESTYPE {"Debit", "Credit", "Loan", "Debt"};
 const std::vector<std::string> CHOICESVIEWENTRY {"All", "Specific"};
 std::vector<std::string> allEntries;
 std::vector<std::string> foundEntries;
@@ -81,12 +82,12 @@ void menuInitilization(const std::vector<std::string> &par_ARRCHOICE, int direct
     }
     keyPress = wgetch(stdscr);
     switch(keyPress) {
-        case 107:
+        case KEY_K:
             highlight--;
             if (highlight == -1)
                 highlight = 0;
                 break;
-        case 106:
+        case KEY_J:
             highlight++;
             if (highlight == size)
                 highlight = size - 1;
@@ -135,8 +136,8 @@ void removeEntry()
             mvwprintw(stdscr, allEntries.size() + 5, 0, "Are you sure you want to DELETE this entry? [Y/n]");
             attroff(A_BOLD);
             keyPress = getch();
-            if (keyPress == 121) {
-                eraseFileLine("database.txt", eraseLine);
+            if (keyPress == KEY_Y) {
+                erase_file_line("database.txt", eraseLine);
                 main();
                 break;
             } else {
@@ -175,7 +176,7 @@ void getSetAmount()
     }
     // Sets the date and time
     // entry.setDate(getCurrentDateTime() + '\n');
-    entry.setDate(getCurrentDateTime());
+    entry.setDate(get_current_date());
     // Writes to file
     outputFile << entry.getType() << ", " << entry.getCategory() << ", " << "$"
     << entry.getAmount() << ", " << entry.getDescription() << ", " << entry.getDate() << ",\n";
@@ -198,16 +199,16 @@ void setCategoryIncome()
         mvwprintw(stdscr, 0, 1, "What was it from ");
         menuInitilization(CHOICESCATEGORYINCOME, 1, 2, 1);
         switch(keyPress) {
-            case 113:
-                endwin();
-                exit(1);
-            case 108:
+            case KEY_L:
                 entry.setCategory(CHOICESCATEGORYINCOME[highlight]);
                 clearRefresh();
                 getSetAmount();
-            case 104:
+            case KEY_H:
                 clearRefresh();
                 addEntry();
+            case KEY_Q:
+                endwin();
+                exit(1);
         }
     }
 }
@@ -221,17 +222,17 @@ void setCategoryExpense()
         mvwprintw(stdscr, 0, 1, "What was it spent on: ");
         menuInitilization(CHOICESCATEGORYEXPENSE, 1, 2, 1);
         switch(keyPress) {
-            case 113:
-                endwin();
-                exit(1);
-            case 108:
+            case KEY_L:
                 entry.setCategory(CHOICESCATEGORYEXPENSE[highlight]);
                 clearRefresh();
                 getSetAmount();
                 break;
-            case 104:
+            case KEY_H:
                 clearRefresh();
                 addEntry();
+            case KEY_Q:
+                endwin();
+                exit(1);
         }
     }
 }
@@ -243,18 +244,18 @@ void addEntry()
         mvwprintw(stdscr, 0, 1, "Please Select the Category: ");
         menuInitilization(CHOICESTYPE, 1, 2, 1);
         switch(keyPress) {
-            case 108:
+            case KEY_L:
                 clearRefresh();
-                if(CHOICESTYPE[highlight] == "Expense") {
+                if(CHOICESTYPE[highlight] == "Debit") {
                     setCategoryExpense();
-                } else if (CHOICESTYPE[highlight] == "Income") {
+                } else if (CHOICESTYPE[highlight] == "Credit") {
                     setCategoryIncome();
                 }
-            case 104:
+            case KEY_H:
                 main();
                 clearRefresh();
                 break;
-            case 113:
+            case KEY_Q:
                 endwin();
                 exit(1);
         }
@@ -262,44 +263,60 @@ void addEntry()
 
 }
 
-void calculate_money_left_over(std::string &par_line)
+void calculate_money_left_over_month(std::vector<std::string> &vec, int month)
 {
-    if (getType(par_line) == "Expense") {
-        amount = amount - getAmountLine(par_line);
-    } else {
-        amount = amount + getAmountLine(par_line);
+    for (auto entry : vec) {
+        if (get_month(entry) == month) {
+            if (get_type(entry) == "Debit") {
+                amount = amount - get_amount_line_float(entry);
+            } else {
+                amount = amount + get_amount_line_float(entry);
+            }
+        }
+    }
+}
+
+void calculate_money_left_over(std::vector<std::string> &vec)
+{
+    for (auto entry : vec) {
+        if (get_type(entry) == "Debit") {
+            amount = amount - get_amount_line_float(entry);
+        } else {
+                amount = amount + get_amount_line_float(entry);
+        }
     }
 }
 
 void setup_menu(std::vector<std::string> &vec)
 {
-    highlight = 0;
     clearRefresh();
-    draw_header();
+    draw_header(vec);
+    numEntries = vec.size();
+    highlight = 0;
     std::ostringstream ss;
     ss << amount;
     std::string amountString(ss.str());
-    std::string print = "Total money left over: $" + amountString;
+    std::string print = "Balance: $" + amountString;
     mvprintw(numEntries + 5, 1, print.c_str());
-    numEntries = 0;
+//    mvprintw(15, 1, std::to_string(numEntries).c_str());
     while(true) {
         curs_set(0);
         menuInitilization(vec, 1, 4, 0);
         switch (keyPress) {
-        case 110:
+        case KEY_N:
             clearRefresh();
             addEntry();
-        case 120:
+        case KEY_X:
             removeEntry();
             setup_menu(allEntriesSpaces);
-        case 47:
+        case KEY_BACKSLASH:
             find_entry();
             break;
-        case 102:
+        case KEY_F:
             filter_results();
-        case 27:
+        case KEY_ESCAPE:
             setup_menu(allEntriesSpaces);
-        case 113:
+        case KEY_Q:
             endwin();
             exit(1);
         }
@@ -307,35 +324,33 @@ void setup_menu(std::vector<std::string> &vec)
 }
 
 
+/* REMOVE NUMENTRIES FROM THIS */
 void filter_results()
 {
-    specificMonthEntries.clear();
     int month;
     clearRefresh();
     mvprintw(0, 1, "Which month would you like to see?");
     highlight = 0;
+    amount = 0;
     while (true) {
         menuInitilization(months, 1, 2, 1);
         switch (keyPress) {
-        case 108:
+        case KEY_L:
             month = highlight + 1;
             for (auto entry : allEntriesSpaces) {
-                if (getTimeFrame(entry) == month) {
+                if (get_month(entry) == month) {
                     specificMonthEntries.push_back(entry);
                     numEntries++;
                 }
             }
-            for (auto entry : allEntries) {
-                if (getTimeFrame(entry) == month) {
-                    calculate_money_left_over(entry);
-                }
-            }
+            calculate_money_left_over_month(allEntries, month);
     setup_menu(specificMonthEntries);
         }
     }
 }
 
 
+/* REMOVE NUMENTRIES FROM THIS */
 void find_entry()
 {
     foundEntries.clear();
@@ -360,16 +375,16 @@ void find_entry()
     } else {
         clearRefresh();
     }
-    draw_header();
+    draw_header(foundEntries);
     highlight = 0;
     setup_menu(foundEntries);
 }
 
 
+/* Add budget for each category, show if going over the budget in reports section. Display a notification to check reports on main page if going over budget. Show budget/spending for each category in reports */
 int main()
 {
     write_database_to_vector();
-    fill_all_entries_no_spaces();
     static bool firstRun = false;
     clearRefresh();
     highlight = 0;

@@ -4,7 +4,7 @@
 #include <sstream>
 extern std::string token;
 
-std::string getDate(std::string &par_line)
+std::string get_date(std::string &par_line)
 {
     std::string date;
     std::istringstream ss_line(par_line);
@@ -17,16 +17,16 @@ std::string getDate(std::string &par_line)
 }
 
 // RETURNS THE MONTH (1, 2, 3, ETC)
-int getTimeFrame(std::string &par_line)
+int get_month(std::string &par_line)
 {
-    std::string date = getDate(par_line);
+    std::string date = get_date(par_line);
     std::istringstream ss_token(date);
     std::getline(ss_token, token, '-' );
     return stoi(token);
 }
 
 // RETURNS THE AMOUNT, FLOAT (15.65)
-float getAmountLine(std:: string &par_line)
+float get_amount_line_float(std:: string &par_line)
 {
     std::istringstream ss_line(par_line);
     std::string amount;
@@ -39,7 +39,7 @@ float getAmountLine(std:: string &par_line)
     return stof(amount);
 }
 // REMOVE THIS AND MAKE 1 FUNCTION / TEMPLATE FOR BOTH TYPES
-std::string getAmountLineString(std:: string &par_line)
+std::string get_amount_line_string(std:: string &par_line)
 {
     std::istringstream ss_line(par_line);
     std::string amount;
@@ -53,7 +53,7 @@ std::string getAmountLineString(std:: string &par_line)
 }
 
 // Gets the Type (Expense/Income)
-std::string getType(std::string &par_line)
+std::string get_type(std::string &par_line)
 {
     std::string type;
     std::istringstream ss_line(par_line);
@@ -61,7 +61,7 @@ std::string getType(std::string &par_line)
     return type;
 }
 
-std::string getCategory(std::string &par_line)
+std::string get_category(std::string &par_line)
 {
     std::string category;
     std::istringstream ss_line(par_line);
@@ -71,7 +71,7 @@ std::string getCategory(std::string &par_line)
 }
 
 
-std::string getDescription(std::string &par_line)
+std::string get_description(std::string &par_line)
 {
     std::string description;
     std::istringstream ss_line(par_line);
@@ -82,7 +82,7 @@ std::string getDescription(std::string &par_line)
     return description;
 }
 
-float getAmountTotal(const int par_MONTH, const std::string par_TYPE, const std::string par_CATEGORY)
+float get_amount_total(const int par_MONTH, const std::string par_TYPE, const std::string par_CATEGORY)
 {
     std::fstream database("database.txt");
     std::string line;
@@ -90,14 +90,14 @@ float getAmountTotal(const int par_MONTH, const std::string par_TYPE, const std:
     float amount = 0;
     if (par_CATEGORY == "All") {
         while(std::getline(database, line)) {
-            if (par_TYPE == getType(line) && par_MONTH == getTimeFrame(line)) {
-                amount += getAmountLine(line);
+            if (par_TYPE == get_type(line) && par_MONTH == get_month(line)) {
+                amount += get_amount_line_float(line);
             }
         }
     } else {
         while(std::getline(database, line)) {
-            if (par_TYPE == getType(line)&& par_MONTH == getTimeFrame(line) && par_CATEGORY == getCategory(line)) {
-            amount += getAmountLine(line);
+            if (par_TYPE == get_type(line)&& par_MONTH == get_month(line) && par_CATEGORY == get_category(line)) {
+            amount += get_amount_line_float(line);
             }
         }
     }
@@ -107,7 +107,7 @@ return amount;
 }
 
 // Get the date and time
-std::string getCurrentDateTime()
+std::string get_current_date()
 {
     std::time_t _time;
     std::tm* timeinfo;

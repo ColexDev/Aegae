@@ -12,7 +12,7 @@ static int longestCategory = 0;
 static int longestAmount = 0;
 
 // Copied from stack overflow, its function is self-explanatory.
-void eraseFileLine(const std::string par_PATH, const std::string par_ERASELINE)
+void erase_file_line(const std::string par_PATH, const std::string par_ERASELINE)
 {
     std::string line;
     std::fstream database;

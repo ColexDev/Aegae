@@ -1,13 +1,13 @@
 #pragma once
 #include <iostream>
 
-int getTimeFrame(std::string &par_line);
-float getAmountLine(std:: string &par_line);
-std::string getAmountLineString(std::string &par_line);
-std::string getType(std::string &par_line);
-std::string getCategory(std::string &par_line);
-float getAmountTotal(const int par_MONTH, const std::string par_TYPE, const std::string par_CATEGORY);
-std::string getDate(std::string &par_line);
-std::string getDescription(std::string &par_line);
-std::string getCurrentDateTime();
+int get_month(std::string &par_line);
+float get_amount_line_float(std:: string &par_line);
+std::string get_amount_line_string(std::string &par_line);
+std::string get_type(std::string &par_line);
+std::string get_category(std::string &par_line);
+float get_amount_total(const int par_MONTH, const std::string par_TYPE, const std::string par_CATEGORY);
+std::string get_date(std::string &par_line);
+std::string get_description(std::string &par_line);
+std::string get_current_date();
 
