@@ -1,10 +1,12 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+
 #include "get.h"
 
 
 extern std::vector<std::string> allEntries;
+extern std::vector<std::string> budget;
 
 static int longestDate = 0;
 static int longestType = 0;
@@ -44,5 +46,5 @@ void write_database_to_vector()
     while(std::getline(database, line)) {
         allEntries.push_back(line);
     }
+    std::fstream budgetFile("budget.txt");
 }
-

@@ -17,7 +17,7 @@ extern std::vector<std::string> allEntriesSpaces;
 extern std::vector<std::string> specificMonthEntries;
 void menuInitilization(const std::vector<std::string> &par_ARRCHOICE, int direction, int xStart, int yStart);
 
-void find_longest()
+void find_longest(int par_month = 0)
 {
     /* These are initialized here so that the lines under the header gets redrawn
        if not the old longest values are changed, so if a long entry is removed the
@@ -27,48 +27,51 @@ void find_longest()
     longestCategory = 0;
     longestAmount = 0;
     longestDescription = 0;
+    /* FIX THIS */
     for (auto entry : allEntries) {
-        int date = get_date(entry).length();
-        int type = get_type(entry).length();
-        int category = get_category(entry).length();
-        int amount = get_amount_line_string(entry).length();
-        int description = get_description(entry).length();
-        if (date > longestDate) {
-            longestDate = date;
-        }
-        if (type > longestType) {
-            longestType = type;
-        }
-        if (category > longestCategory) {
-            longestCategory = category;
-        }
-        if (amount > longestAmount) {
-            longestAmount = amount;
-        }
-        if(description > longestDescription) {
-            longestDescription = description;
+        if ((get_month(entry) == par_month) || (par_month == 0)) {
+            int date = get_date(entry).length();
+            int type = get_type(entry).length();
+            int category = get_category(entry).length();
+            int amount = get_amount_line_string(entry).length();
+            int description = get_description(entry).length();
+            if (date > longestDate) {
+                longestDate = date;
+            }
+            if (type > longestType) {
+                longestType = type;
+            }
+            if (category > longestCategory) {
+                longestCategory = category;
+            }
+            if (amount > longestAmount) {
+                longestAmount = amount;
+            }
+            if(description > longestDescription) {
+                longestDescription = description;
+            }
         }
     }
 }
 
-std::string add_space_after(std::string &spaceString, int numSpaces)
+std::string add_space_after(std::string &par_spaceString, int par_numSpaces)
 {
     std::string space = " ";
-    for (int i = 0; i < numSpaces; i++) {
-        spaceString = spaceString + space;
+    for (int i = 0; i < par_numSpaces; i++) {
+        par_spaceString+= space;
     }
-    return spaceString;
+    return par_spaceString;
 }
 
-int find_number_of_spaces(std::string current, int longest)
+int find_number_of_spaces(std::string par_current, int par_longest)
 {
-    return longest - current.length();
+    return par_longest - par_current.length();
 }
 
-int get_number_of_entries(std::vector<std::string> &vec)
+int get_number_of_entries(std::vector<std::string> &par_vec)
 {
     int entries = 0;
-    for (auto entry : vec) {
+    for (auto entry : par_vec) {
         entries++;
     }
     return entries;
@@ -98,13 +101,13 @@ void fill_all_entries_no_spaces()
 }
 
 /* Change this to all be dynamic for code readability (Change the first 2 printings of the bars) */
-void draw_header(std::vector<std::string> &vec)
+void draw_header(std::vector<std::string> &par_vec)
 {
     int print2 = 0;
     int print = 12;
     fill_all_entries_no_spaces();
     /* Keybinds */
-    mvprintw(0, 1, "q = Quit; n = New Entry; x = Remove Selected Entry; f = Filter Results; / = Search");
+    mvprintw(0, 1, "q = Quit; n = New Entry; x = Remove Selected Entry; f = Filter Results; b = Set Budget; / = Search");
     /* Header */
     mvprintw(2, 1, "Date");
     mvprintw(3, 1, "----------");
@@ -133,6 +136,6 @@ void draw_header(std::vector<std::string> &vec)
     /* Draws footer */
     int total = longestDate + longestType + longestAmount + longestCategory + longestDescription + 5;
     for (int i = 0; i < total; i++) {
-        mvprintw(vec.size() + 4, i + 1, "-");
+        mvprintw(par_vec.size() + 4, i + 1, "-");
     }
 }

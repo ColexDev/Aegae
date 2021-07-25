@@ -3,6 +3,7 @@ constexpr int VERTICAL = 1;
 
 constexpr int KEY_ESCAPE = 27;
 constexpr int KEY_BACKSLASH = 47;
+constexpr int KEY_B = 98;
 constexpr int KEY_F = 102;
 constexpr int KEY_H = 104;
 constexpr int KEY_J = 106;

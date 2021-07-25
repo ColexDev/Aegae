@@ -10,24 +10,6 @@
 #include "table.h"
 #include "def.h"
 
-
-int keyPress;
-int month;
-int highlight;
-std::string token;
-float amount = 0;
-int numEntries = 0;
-
-const std::vector<std::string> CHOICESTYPE {"Debit", "Credit", "Loan", "Debt"};
-const std::vector<std::string> CHOICESVIEWENTRY {"All", "Specific"};
-std::vector<std::string> allEntries;
-std::vector<std::string> foundEntries;
-std::vector<std::string> allEntriesSpaces;
-std::vector<std::string> specificMonthEntries;
-/* Edit the two below to add/delete category options */
-const std::vector<std::string> CHOICESCATEGORYEXPENSE {"Food", "Transportation", "Entertainment", "Other"};
-const std::vector<std::string> CHOICESCATEGORYINCOME {"Salary", "Sale", "Gift", "Other"};
-
 // Entry class for storing temp values
 class Entry
 {
@@ -52,35 +34,64 @@ public:
     std::string getDescription() {return mem_description;}
 };
 
-const std::vector<std::string> months {"January", "Feburary", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
-
+/* Variable declarations */
+int keyPress;
+int month;
+int highlight = 0;
 int longestDate;
 int longestType;
 int longestCategory;
 int longestAmount;
 int longestDescription;
+int numEntries = 0;
+float amount = 0;
+/* remove this from global variables */
+std::string token;
+char token_[80];
+Entry entry;
+const std::vector<std::string> CHOICES_TYPE {"Debit", "Credit", "Loan", "Debt"};
+const std::vector<std::string> CHOICES_VIEW_ENTRY {"All", "Specific"};
+std::vector<std::string> allEntries;
+std::vector<std::string> foundEntries;
+std::vector<std::string> budget;
+std::vector<std::string> allEntriesSpaces;
+std::vector<std::string> specificMonthEntries;
+/* Edit the two below to add/delete category options */
+const std::vector<std::string> CHOICES_CATEGORY_EXPENSE {"Food", "Transportation", "Entertainment", "Misc"};
+const std::vector<std::string> CHOICES_CATEGORY_INCOME {"Salary", "Sale", "Gift", "Misc"};
+const std::vector<std::string> months {"January", "Feburary", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
 
+/* Function forward declarations*/
 int main();
 void menuInitilization(const std::vector<std::string> &arrChoice, int direction, int xStarxStart, int yStart);
 void find_entry();
 void addEntry();
 void filter_results();
-Entry entry;
 
-void clearRefresh(){ wclear(stdscr); wrefresh(stdscr); }
+void clearRefresh()
+{
+    wclear(stdscr);
+    wrefresh(stdscr);
+}
 
-void menuInitilization(const std::vector<std::string> &par_ARRCHOICE, int direction, int xStart, int yStart)
+/* Initilizes a menu either horizonatally or vertically. This NEEDS to be run in a while loop */
+void menuInitilization(const std::vector<std::string> &par_ARRCHOICE, int par_direction, int par_xStart, int par_yStart)
 {
     int size = par_ARRCHOICE.size();
+    /* The array is printed, if i == highlight that item will be highlighted */
     for(int i = 0; i < size; i++) {
         if(i == highlight) {wattron(stdscr, A_REVERSE);}
-        if (direction == 1) {
-            mvwprintw(stdscr, i+xStart, yStart, par_ARRCHOICE[i].c_str());
+
+        if (par_direction == 1) {
+            mvwprintw(stdscr, i + par_xStart, par_yStart, par_ARRCHOICE[i].c_str());
         } else {
             mvwprintw(stdscr, 1, i, par_ARRCHOICE[i].c_str());
         }
+
         wattroff(stdscr, A_REVERSE);
     }
+
+    /* This gets which key is pressed, when K is pressed highlight is decreased by 1, then i == highlight at a different value, highlighting that value of the array. The if statement checks for bounds */
     keyPress = wgetch(stdscr);
     switch(keyPress) {
         case KEY_K:
@@ -95,44 +106,19 @@ void menuInitilization(const std::vector<std::string> &par_ARRCHOICE, int direct
                 break;
     }
 }
-/*
-void viewEntry()
-{
-    highlight = 0;
-    clearRefresh();
-    std::string line;
-    std::ifstream database("database.txt");
-    int lineNumber = 0;
-    while(true) {
-        mvwprintw(stdscr, 0, 1, "Which entries would you like to see: ");
-        menuInitilization(CHOICESVIEWENTRY, 1, 2, 1);
-        if(keyPress == 108) {
-            switch (highlight) {
-                case 0:
-                    clearRefresh();
-                    endwin();
-                    draw_table();
-                    break;
-                case 1:
-                    clearRefresh();
-                    findEntry();
-            }
-            break;
-        }
-    }
-    highlight = 0;
-    main();
-}
-*/
 
+/* Removes a selected entry from the database file */
 void removeEntry()
 {
     std::ifstream database("database.txt");
     std::string line;
     std::string eraseLine;
+
+    /* Loops through the database until it finds the highlighed entry */
     while(std::getline(database, line)) {
         if(line.find(allEntries[highlight]) != std::string::npos) {
             eraseLine = line;
+            /* Asks for deletion confirmation */
             attron(A_BOLD);
             mvwprintw(stdscr, allEntries.size() + 5, 0, "Are you sure you want to DELETE this entry? [Y/n]");
             attroff(A_BOLD);
@@ -151,8 +137,8 @@ void removeEntry()
 // This does too much based off its name
 void getSetAmount()
 {
-    std::ofstream outputFile("outputFileName");
-    std::ifstream inputFile("database.txt");
+    std::ofstream outputFile("tempFile");
+    std::ifstream inputFile("database.txt", std::fstream::app);
     constexpr char MESG[]="Enter the Amount: ";
     char str[80];
     echo();
@@ -191,6 +177,7 @@ void getSetAmount()
     main();
 }
 
+/* Make both setCategory functions into 1 */
 void setCategoryIncome()
 {
     highlight = 0;
@@ -198,10 +185,10 @@ void setCategoryIncome()
     while(true) {
         clearRefresh();
         mvwprintw(stdscr, 0, 1, "What was it from ");
-        menuInitilization(CHOICESCATEGORYINCOME, 1, 2, 1);
+        menuInitilization(CHOICES_CATEGORY_INCOME, 1, 2, 1);
         switch(keyPress) {
             case KEY_L:
-                entry.setCategory(CHOICESCATEGORYINCOME[highlight]);
+                entry.setCategory(CHOICES_CATEGORY_INCOME[highlight]);
                 clearRefresh();
                 getSetAmount();
             case KEY_H:
@@ -221,10 +208,10 @@ void setCategoryExpense()
     while(true) {
         clearRefresh();
         mvwprintw(stdscr, 0, 1, "What was it spent on: ");
-        menuInitilization(CHOICESCATEGORYEXPENSE, 1, 2, 1);
+        menuInitilization(CHOICES_CATEGORY_EXPENSE, 1, 2, 1);
         switch(keyPress) {
             case KEY_L:
-                entry.setCategory(CHOICESCATEGORYEXPENSE[highlight]);
+                entry.setCategory(CHOICES_CATEGORY_EXPENSE[highlight]);
                 clearRefresh();
                 getSetAmount();
                 break;
@@ -243,13 +230,13 @@ void addEntry()
     highlight = 0;
     while(true) {
         mvwprintw(stdscr, 0, 1, "Please Select the Category: ");
-        menuInitilization(CHOICESTYPE, 1, 2, 1);
+        menuInitilization(CHOICES_TYPE, 1, 2, 1);
         switch(keyPress) {
             case KEY_L:
                 clearRefresh();
-                if(CHOICESTYPE[highlight] == "Debit") {
+                if(CHOICES_TYPE[highlight] == "Debit") {
                     setCategoryExpense();
-                } else if (CHOICESTYPE[highlight] == "Credit") {
+                } else if (CHOICES_TYPE[highlight] == "Credit") {
                     setCategoryIncome();
                 }
             case KEY_H:
@@ -261,53 +248,92 @@ void addEntry()
                 exit(1);
         }
     }
-
 }
 
-void calculate_money_left_over_month(std::vector<std::string> &vec, int month)
+void calculate_money_left_over_month(std::vector<std::string> &par_vec, int par_month)
 {
-    for (auto entry : vec) {
-        if (get_month(entry) == month) {
+    amount = 0;
+    for (auto entry : par_vec) {
+        if (get_month(entry) == par_month) {
             if (get_type(entry) == "Debit") {
-                amount = amount - get_amount_line_float(entry);
+                amount-= get_amount_line_float(entry);
             } else {
-                amount = amount + get_amount_line_float(entry);
+                amount+= get_amount_line_float(entry);
             }
         }
     }
 }
 
-void calculate_money_left_over(std::vector<std::string> &vec)
+void calculate_money_left_over(std::vector<std::string> &par_vec)
 {
-    for (auto entry : vec) {
+    amount = 0;
+    for (auto entry : par_vec) {
         if (get_type(entry) == "Debit") {
-            amount = amount - get_amount_line_float(entry);
+            amount-= get_amount_line_float(entry);
         } else {
-            amount = amount + get_amount_line_float(entry);
+            amount+= get_amount_line_float(entry);
         }
     }
 }
 
-void setup_menu(std::vector<std::string> &vec)
+void calculate_money_left_over_specific(std::vector<std::string> &par_vec)
+{
+    amount = 0;
+    for (auto entry : par_vec) {
+        if (entry.find(token_) != std::string::npos) {
+            if (get_type(entry) == "Debit") {
+                amount-= get_amount_line_float(entry);
+            } else {
+                amount+= get_amount_line_float(entry);
+            }
+        }
+    }
+}
+
+/* Make a budget file to store these in, put them into variable in write_database_to_vector*/
+void set_budget()
 {
     clearRefresh();
-    draw_header(vec);
-    if (vec.size() == allEntriesSpaces.size()) {
+    std::fstream budgetFile("budget.txt", std::fstream::app);
+    int i = 0;
+    echo();
+    for (auto category : CHOICES_CATEGORY_EXPENSE) {
+        std::string print = "What is your budget for " + category + ": $";
+        mvprintw(i, 0, "%s", print.c_str());
+        char str[80];
+        getstr(str);
+        std::string str2 = str;
+        budgetFile << str2 << '\n';
+        i++;
+    }
+}
+
+
+/* Try replacing specificMonthEntriesw with allEntriesSpaces and just rewriting to it everytime */
+/* Sets up and draws the main table based on which vector is passed */
+void setup_menu(std::vector<std::string> &par_vec)
+{
+    clearRefresh();
+    draw_header(par_vec);
+    if (par_vec.size() == allEntriesSpaces.size()) {
         calculate_money_left_over(allEntries);
+    } else if (par_vec.size() == foundEntries.size()) {
+        calculate_money_left_over_specific(allEntries);
     } else {
         calculate_money_left_over_month(allEntries, month);
     }
-    numEntries = vec.size();
+
+    /* Just fucking get rid of numEntries from the entire program */
+    numEntries = par_vec.size();
     highlight = 0;
     std::ostringstream ss;
     ss << amount;
     std::string amountString(ss.str());
     std::string print = "Balance: $" + amountString;
     mvprintw(numEntries + 5, 1, print.c_str());
-//    mvprintw(15, 1, std::to_string(numEntries).c_str());
     while(true) {
         curs_set(0);
-        menuInitilization(vec, 1, 4, 0);
+        menuInitilization(par_vec, 1, 4, 0);
         switch (keyPress) {
         case KEY_N:
             clearRefresh();
@@ -320,6 +346,8 @@ void setup_menu(std::vector<std::string> &vec)
             break;
         case KEY_F:
             filter_results();
+        case KEY_B:
+            set_budget();
         case KEY_ESCAPE:
             setup_menu(allEntriesSpaces);
         case KEY_Q:
@@ -329,7 +357,6 @@ void setup_menu(std::vector<std::string> &vec)
     }
 }
 
-
 /* REMOVE NUMENTRIES FROM THIS */
 void filter_results()
 {
@@ -337,12 +364,12 @@ void filter_results()
     mvprintw(0, 1, "Which month would you like to see?");
     highlight = 0;
     amount = 0;
-    calculate_money_left_over_month(allEntries, month);
     while (true) {
         menuInitilization(months, 1, 2, 1);
         switch (keyPress) {
         case KEY_L:
             month = highlight + 1;
+            specificMonthEntries.clear();
             for (auto entry : allEntriesSpaces) {
                 if (get_month(entry) == month) {
                     specificMonthEntries.push_back(entry);
@@ -354,21 +381,19 @@ void filter_results()
     }
 }
 
-
 /* REMOVE NUMENTRIES FROM THIS */
 void find_entry()
 {
     foundEntries.clear();
     int row, col;
-    char token[80];
     getmaxyx(stdscr, row, col);
     mvprintw(row - 1, 1, "/");
     echo();
     move(row - 1, 2);
-    getstr(token);
+    getstr(token_);
     noecho();
     for (auto entry : allEntriesSpaces) {
-        if (entry.find(token) != std::string::npos) {
+        if (entry.find(token_) != std::string::npos) {
             numEntries++;
             foundEntries.push_back(entry);
         }
@@ -380,38 +405,24 @@ void find_entry()
     } else {
         clearRefresh();
     }
+    /* Why is the call to draw_header here???? */
     draw_header(foundEntries);
     highlight = 0;
     setup_menu(foundEntries);
 }
 
-
 /* Add budget for each category, show if going over the budget in reports section. Display a notification to check reports on main page if going over budget. Show budget/spending for each category in reports */
+
+/* Try changing calculate_money_left_over to .find("Debit") instead of calling get_type so that it can be done on any vector (this needs to be done so that the calculate_money_left_over can be called on the vectors with spaces, this will decrease the amount of if statements needed to filter down allEntries to just what is inside of specificMonthEntries or foundEntries. This will also clean up the code a lot and remove bloat. Just remove all of the get functions all together, or change them to do .find() instead */
 int main()
 {
     write_database_to_vector();
-    static bool firstRun = false;
     clearRefresh();
-    highlight = 0;
-    setlocale(LC_ALL, "");
+    /* Sets up ncurses */
     initscr();
+    setlocale(LC_ALL, "");
     cbreak();
     noecho();
     keypad(stdscr, true);
-    /*
-    if(firstRun == false) {
-        while(true) {
-            wattron(stdscr, A_BOLD);
-            mvwprintw(stdscr, 0, 1, "Corcyra");
-            mvwprintw(stdscr, 1, 1, "By: ColexDev");
-            wattroff(stdscr, A_BOLD);
-            mvwprintw(stdscr, 3, 1, "Press any key to continue...");
-            getch();
-            clearRefresh();
-            break;
-        }
-            firstRun = true;
-    }
-    */
     setup_menu(allEntriesSpaces);
 }
