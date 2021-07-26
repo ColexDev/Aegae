@@ -63,7 +63,6 @@ const std::vector<std::string> months {"January", "Feburary", "March", "April", 
 
 /* Function forward declarations*/
 int main();
-void menuInitilization(const std::vector<std::string> &arrChoice, int direction, int xStarxStart, int yStart);
 void find_entry();
 void addEntry();
 void filter_results();
@@ -171,7 +170,7 @@ void getSetAmount()
     inputFile.close();
     outputFile.close();
     remove("database.txt");
-    rename("outputFileName","database.txt");
+    rename("tempFile","database.txt");
     clearRefresh();
     highlight = 0;
     main();
