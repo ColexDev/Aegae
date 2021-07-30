@@ -49,7 +49,7 @@ float amount = 0;
 std::string token;
 char token_[80];
 Entry entry;
-const std::vector<std::string> CHOICES_TYPE {"Debit", "Credit", "Loan", "Debt"};
+const std::vector<std::string> CHOICES_TYPE {"Income", "Expense", "Loan", "Debt"};
 const std::vector<std::string> CHOICES_VIEW_ENTRY {"All", "Specific"};
 std::vector<std::string> allEntries;
 std::vector<std::string> foundEntries;
@@ -138,7 +138,7 @@ void getSetAmount()
 {
     std::ofstream outputFile("tempFile");
     std::ifstream inputFile("database.txt", std::fstream::app);
-    constexpr char MESG[]="Enter the Amount: ";
+    constexpr char MESG[]="Enter the Amount: $";
     char str[80];
     echo();
     mvprintw(0, 0, "%s", MESG);
@@ -233,9 +233,9 @@ void addEntry()
         switch(keyPress) {
             case KEY_L:
                 clearRefresh();
-                if(CHOICES_TYPE[highlight] == "Debit") {
+                if(CHOICES_TYPE[highlight] == "Expense") {
                     setCategoryExpense();
-                } else if (CHOICES_TYPE[highlight] == "Credit") {
+                } else if (CHOICES_TYPE[highlight] == "Income") {
                     setCategoryIncome();
                 }
             case KEY_H:
@@ -254,7 +254,7 @@ void calculate_money_left_over_month(std::vector<std::string> &par_vec, int par_
     amount = 0;
     for (auto entry : par_vec) {
         if (get_month(entry) == par_month) {
-            if (get_type(entry) == "Debit") {
+            if (get_type(entry) == "Expense") {
                 amount-= get_amount_line_float(entry);
             } else {
                 amount+= get_amount_line_float(entry);
@@ -267,7 +267,7 @@ void calculate_money_left_over(std::vector<std::string> &par_vec)
 {
     amount = 0;
     for (auto entry : par_vec) {
-        if (get_type(entry) == "Debit") {
+        if (get_type(entry) == "Expense") {
             amount-= get_amount_line_float(entry);
         } else {
             amount+= get_amount_line_float(entry);
@@ -280,7 +280,7 @@ void calculate_money_left_over_specific(std::vector<std::string> &par_vec)
     amount = 0;
     for (auto entry : par_vec) {
         if (entry.find(token_) != std::string::npos) {
-            if (get_type(entry) == "Debit") {
+            if (get_type(entry) == "Expense") {
                 amount-= get_amount_line_float(entry);
             } else {
                 amount+= get_amount_line_float(entry);
@@ -289,10 +289,10 @@ void calculate_money_left_over_specific(std::vector<std::string> &par_vec)
     }
 }
 
-/* Make a budget file to store these in, put them into variable in write_database_to_vector*/
 void set_budget()
 {
     clearRefresh();
+    remove("budget.txt");
     std::fstream budgetFile("budget.txt", std::fstream::app);
     int i = 0;
     echo();
@@ -305,8 +305,27 @@ void set_budget()
         budgetFile << str2 << '\n';
         i++;
     }
+    noecho();
 }
 
+/* Broken and throws an error */
+void draw_budget()
+{
+    std::fstream budgetFile("budget.txt");
+    std::string line;
+    int i = 0;
+    while (std::getline(budgetFile, line)) {
+        budget.push_back(line);
+    }
+
+    for (auto amount : budget) {
+        std::string category = CHOICES_CATEGORY_EXPENSE[i];
+        float percent = get_amount_category(category) / stof(amount);
+        std::string print = category + ": " + std::to_string(get_amount_category(category)) + " / " + amount + "(" + std::to_string(percent) + "%)";
+        mvprintw(i + 12, 1, print.c_str());
+        i++;
+    }
+}
 
 /* Try replacing specificMonthEntriesw with allEntriesSpaces and just rewriting to it everytime */
 /* Sets up and draws the main table based on which vector is passed */
@@ -330,6 +349,7 @@ void setup_menu(std::vector<std::string> &par_vec)
     std::string amountString(ss.str());
     std::string print = "Balance: $" + amountString;
     mvprintw(numEntries + 5, 1, print.c_str());
+//    draw_budget();
     while(true) {
         curs_set(0);
         menuInitilization(par_vec, 1, 4, 0);

@@ -2,7 +2,10 @@
 #include <fstream>
 #include <ctime>
 #include <sstream>
+#include <vector>
+
 extern std::string token;
+extern std::vector<std::string> allEntries;
 
 std::string get_date(std::string &par_line)
 {
@@ -82,6 +85,19 @@ std::string get_description(std::string &par_line)
     return description;
 }
 
+float get_amount_category(std::string par_category)
+{
+    float amount = 0.0;
+    for (auto entry : allEntries) {
+        if ((get_category(entry) == par_category) && (get_type(entry) == "Income")) {
+            amount += get_amount_line_float(entry);
+        } else if ((get_category(entry) == par_category) && (get_type(entry) == "Expense")) {
+            amount -= get_amount_line_float(entry);
+        }
+    }
+    return amount;
+}
+
 float get_amount_total(const int par_MONTH, const std::string par_TYPE, const std::string par_CATEGORY)
 {
     std::fstream database("database.txt");
@@ -96,7 +112,7 @@ float get_amount_total(const int par_MONTH, const std::string par_TYPE, const st
         }
     } else {
         while(std::getline(database, line)) {
-            if (par_TYPE == get_type(line)&& par_MONTH == get_month(line) && par_CATEGORY == get_category(line)) {
+            if (par_TYPE == get_type(line) && par_MONTH == get_month(line) && par_CATEGORY == get_category(line)) {
             amount += get_amount_line_float(line);
             }
         }

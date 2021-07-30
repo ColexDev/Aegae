@@ -10,3 +10,4 @@ float get_amount_total(const int par_MONTH, const std::string par_TYPE, const st
 std::string get_date(std::string &par_line);
 std::string get_description(std::string &par_line);
 std::string get_current_date();
+float get_amount_category(std::string par_category);

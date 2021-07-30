@@ -15,7 +15,6 @@ extern int amount;
 extern std::vector<std::string> allEntries;
 extern std::vector<std::string> allEntriesSpaces;
 extern std::vector<std::string> specificMonthEntries;
-void menuInitilization(const std::vector<std::string> &par_ARRCHOICE, int direction, int xStart, int yStart);
 
 void find_longest(int par_month = 0)
 {
@@ -88,13 +87,13 @@ void fill_all_entries_no_spaces()
         std::string date = get_date(entry);
         pushBack = add_space_after(date, print);
         std::string type = get_type(entry);
-        pushBack = pushBack + add_space_after(type, find_number_of_spaces(type, longestType + 1));
+        pushBack+= add_space_after(type, find_number_of_spaces(type, longestType + 1));
         std::string category = get_category(entry);
-        pushBack = pushBack + add_space_after(category, find_number_of_spaces(category, longestCategory + 2));
+        pushBack+= add_space_after(category, find_number_of_spaces(category, longestCategory + 2));
         std::string amount = get_amount_line_string(entry);
-        pushBack = pushBack + add_space_after(amount, find_number_of_spaces(amount, longestAmount + 1));
+        pushBack+= add_space_after(amount, find_number_of_spaces(amount, longestAmount + 1));
         std::string description = get_description(entry);
-        pushBack = pushBack + add_space_after(description, find_number_of_spaces(description, longestDescription));
+        pushBack+= add_space_after(description, find_number_of_spaces(description, longestDescription));
 
         allEntriesSpaces.push_back(pushBack);
     }
@@ -118,7 +117,14 @@ void draw_header(std::vector<std::string> &par_vec)
 
     print2 = print;
     for (int i = 0; i < longestCategory - 1; i++) {
-        mvprintw(3, print2 + i, "-");
+        /* Nested for loop and if statement needed for drawing enough -'s to be the length of the word above the cell */
+        if (longestCategory < 8) {
+            for (int j = 0; j < 8; j++) {
+                mvprintw(3, print2 + i, "-");
+            }
+        } else {
+            mvprintw(3, print2 + i, "-");
+        }
     }
     print = print + longestCategory + 1;
 
