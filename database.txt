@@ -1,3 +1,0 @@
-Income, Salary, $4500.00, Paid, 07-30-2021,
-Expense, Entertainment, $67.00, Went to the movies, 07-30-2021,
-Expense, Transportation, $55.00, test, 07-30-2021,
