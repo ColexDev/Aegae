@@ -249,6 +249,7 @@ void addEntry()
     }
 }
 
+/* make all of these into 1 */
 void calculate_money_left_over_month(std::vector<std::string> &par_vec, int par_month)
 {
     amount = 0;
@@ -308,20 +309,15 @@ void set_budget()
     noecho();
 }
 
-/* Broken and throws an error */
 void draw_budget()
 {
     std::fstream budgetFile("budget.txt");
     std::string line;
     int i = 0;
     while (std::getline(budgetFile, line)) {
-        budget.push_back(line);
-    }
-
-    for (auto amount : budget) {
         std::string category = CHOICES_CATEGORY_EXPENSE[i];
-        float percent = get_amount_category(category) / stof(amount);
-        std::string print = category + ": " + std::to_string(get_amount_category(category)) + " / " + amount + "(" + std::to_string(percent) + "%)";
+        float percent = get_amount_category(category) / stof(line);
+        std::string print = category + ": " + std::to_string(get_amount_category(category)) + " / " + line + " [" + std::to_string(percent) + "%]";
         mvprintw(i + 12, 1, print.c_str());
         i++;
     }
@@ -333,6 +329,7 @@ void setup_menu(std::vector<std::string> &par_vec)
 {
     clearRefresh();
     draw_header(par_vec);
+    draw_budget();
     if (par_vec.size() == allEntriesSpaces.size()) {
         calculate_money_left_over(allEntries);
     } else if (par_vec.size() == foundEntries.size()) {
