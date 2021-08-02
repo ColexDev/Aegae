@@ -290,7 +290,7 @@ void calculate_money_left_over_specific(std::vector<std::string> &par_vec)
     }
 }
 
-void set_budget()
+void init_budget()
 {
     clearRefresh();
     remove("budget.txt");
@@ -316,8 +316,10 @@ void draw_budget()
     int i = 0;
     while (std::getline(budgetFile, line)) {
         std::string category = CHOICES_CATEGORY_EXPENSE[i];
-        float percent = get_amount_category(category) / stof(line);
-        std::string print = category + ": " + std::to_string(get_amount_category(category)) + " / " + line + " [" + std::to_string(percent) + "%]";
+        float amount = get_amount_category(category);
+        float percent = (amount / stof(line)) * 100;
+        std::string print = category + ": " + std::to_string(amount) + " / " + line + " [" + std::to_string(percent) + "%]";
+        /* unhardcode i + 12 */
         mvprintw(i + 12, 1, print.c_str());
         i++;
     }
@@ -363,7 +365,7 @@ void setup_menu(std::vector<std::string> &par_vec)
         case KEY_F:
             filter_results();
         case KEY_B:
-            set_budget();
+            init_budget();
         case KEY_ESCAPE:
             setup_menu(allEntriesSpaces);
         case KEY_Q:

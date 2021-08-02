@@ -3,6 +3,7 @@
 #include <ctime>
 #include <sstream>
 #include <vector>
+#include <ncurses.h>
 
 extern std::string token;
 extern std::vector<std::string> allEntries;
@@ -85,14 +86,15 @@ std::string get_description(std::string &par_line)
     return description;
 }
 
-float get_amount_category(std::string par_category)
+/* Try to remove entry.find() incase one of the category words
+   is in a description */
+float get_amount_category(std::string &par_category)
 {
     float amount = 0.0;
     for (auto entry : allEntries) {
-        if ((get_category(entry) == par_category) && (get_type(entry) == "Income")) {
+        if (entry.find(par_category) != std::string::npos) {
             amount += get_amount_line_float(entry);
-        } else if ((get_category(entry) == par_category) && (get_type(entry) == "Expense")) {
-            amount -= get_amount_line_float(entry);
+            mvprintw(25, 25, "hello");
         }
     }
     return amount;
@@ -113,13 +115,13 @@ float get_amount_total(const int par_MONTH, const std::string par_TYPE, const st
     } else {
         while(std::getline(database, line)) {
             if (par_TYPE == get_type(line) && par_MONTH == get_month(line) && par_CATEGORY == get_category(line)) {
-            amount += get_amount_line_float(line);
+                amount += get_amount_line_float(line);
             }
         }
     }
 
     std::string numAmount {std::to_string(amount)};
-return amount;
+    return amount;
 }
 
 // Get the date and time
