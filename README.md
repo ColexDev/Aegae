@@ -4,8 +4,8 @@ A simple TUI application to manage money
 Work in progress
 
 ## Dependencies
-- g++ (if you use the makefile, otherwise you can use any C compiler if you include ncurses)
-- ncurses (powers the menu functionality)
+The only dependency is ncurses. The goal in this project was to use almost no dependencies and to write everything myself.
+ncurses was needed to display text where it is needed on the screen.
 
 ## Installation
 ```
