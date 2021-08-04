@@ -8,3 +8,4 @@ int find_number_of_spaces(std::string par_current, int par_longest);
 void fill_all_entries_no_spaces();
 int get_number_of_entries(std::vector<std::string> &par_vec);
 void draw_header(std::vector<std::string> &par_vec);
+void print_progress_bar(float percent, int i, std::vector<std::string> par_vec, int length);

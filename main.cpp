@@ -38,11 +38,6 @@ public:
 int keyPress;
 int month;
 int highlight = 0;
-int longestDate;
-int longestType;
-int longestCategory;
-int longestAmount;
-int longestDescription;
 int numEntries = 0;
 float amount = 0;
 
@@ -67,12 +62,18 @@ const std::vector<std::string> months {"January", "Feburary", "March", "April", 
 int main();
 void find_entry();
 void addEntry();
-void filter_results();
 
-void clearRefresh()
+void clear_refresh()
 {
     wclear(stdscr);
     wrefresh(stdscr);
+}
+
+void add_trailing_zeros(std::string &str)
+{
+    if (!(str.find(".") != std::string::npos)) {
+        str += ".00";
+    }
 }
 
 template <typename T>
@@ -155,10 +156,7 @@ void getSetAmount()
     mvprintw(0, 0, "%s", MESG);
     getstr(str);
     std::string str2 = str;
-    if (str2.find(".") != std::string::npos) {
-    } else {
-        str2 += ".00";
-    }
+    add_trailing_zeros(str2);
     entry.setAmount(str2);
     noecho();
     char msg[]="Enter a Description (Press enter for none): ";
@@ -182,7 +180,7 @@ void getSetAmount()
     outputFile.close();
     remove("database.txt");
     rename("tempFile","database.txt");
-    clearRefresh();
+    clear_refresh();
     highlight = 0;
     main();
 }
@@ -193,16 +191,16 @@ void setCategoryIncome()
     highlight = 0;
     entry.setType("Income");
     while(true) {
-        clearRefresh();
+        clear_refresh();
         mvwprintw(stdscr, 0, 1, "What was it from ");
         menuInitilization(CHOICES_CATEGORY_INCOME, 1, 2, 1);
         switch(keyPress) {
             case KEY_L:
                 entry.setCategory(CHOICES_CATEGORY_INCOME[highlight]);
-                clearRefresh();
+                clear_refresh();
                 getSetAmount();
             case KEY_H:
-                clearRefresh();
+                clear_refresh();
                 addEntry();
             case KEY_Q:
                 endwin();
@@ -216,17 +214,17 @@ void setCategoryExpense()
     highlight = 0;
     entry.setType("Expense");
     while(true) {
-        clearRefresh();
+        clear_refresh();
         mvwprintw(stdscr, 0, 1, "What was it spent on: ");
         menuInitilization(CHOICES_CATEGORY_EXPENSE, 1, 2, 1);
         switch(keyPress) {
             case KEY_L:
                 entry.setCategory(CHOICES_CATEGORY_EXPENSE[highlight]);
-                clearRefresh();
+                clear_refresh();
                 getSetAmount();
                 break;
             case KEY_H:
-                clearRefresh();
+                clear_refresh();
                 addEntry();
             case KEY_Q:
                 endwin();
@@ -243,7 +241,7 @@ void addEntry()
         menuInitilization(CHOICES_TYPE, 1, 2, 1);
         switch(keyPress) {
             case KEY_L:
-                clearRefresh();
+                clear_refresh();
                 if(CHOICES_TYPE[highlight] == "Expense") {
                     setCategoryExpense();
                 } else if (CHOICES_TYPE[highlight] == "Income") {
@@ -251,7 +249,7 @@ void addEntry()
                 }
             case KEY_H:
                 main();
-                clearRefresh();
+                clear_refresh();
                 break;
             case KEY_Q:
                 endwin();
@@ -303,7 +301,7 @@ void calculate_money_left_over_specific(std::vector<std::string> &par_vec)
 
 void init_budget()
 {
-    clearRefresh();
+    clear_refresh();
     remove("budget.txt");
     std::fstream budgetFile("budget.txt", std::fstream::app);
     int i = 0;
@@ -320,25 +318,42 @@ void init_budget()
     noecho();
 }
 
-void draw_budget()
+
+void draw_budget(std::vector<std::string> &par_vec)
 {
+    std::vector<float> percentVec;
     std::fstream budgetFile("budget.txt");
     std::string line;
     int i = 0;
+    float percent = 0;
+    float amount = 0;
+    int longest = 0;
+    int temp = 0;
     while (std::getline(budgetFile, line)) {
         std::string category = CHOICES_CATEGORY_EXPENSE[i];
-        float amount = get_amount_category(category);
-        float percent = (amount / stof(line)) * 100;
-        attron(A_BOLD);
-        mvprintw(allEntries.size() + 7, 1, "Your budget for (insert month) is:");
-        attroff(A_BOLD);
-        if (!(line.find('.') != std::string::npos)) {
-            line += ".00";
+        if (par_vec.size() == allEntriesSpaces.size()) {
+            amount = get_amount_category(category, 1);
+        } else {
+            amount = get_amount_category(category);
         }
-        std::string print = category + ": " + to_string_with_precision(amount, 2) + " / " + line + " [" + to_string_with_precision(percent, 2) + "%]";
+        percent = (amount / stof(line)) * 100;
+        attron(A_BOLD);
+        std::string print_ = "Your budget for " + months[get_current_month() - 1] + " is:";
+        mvprintw(allEntries.size() + 6, 1, print_.c_str());
+        attroff(A_BOLD);
+        add_trailing_zeros(line);
+        std::string print = category + ": " + to_string_with_precision(amount, 2) + " / " + line;
         /* unhardcode i + 12 */
-        mvprintw(i + allEntries.size() + 9 , 1, print.c_str());
+        mvprintw(i + allEntries.size() + 8 , 1, print.c_str());
+        temp = print.length();
+        if (temp > longest) {
+            longest = temp;
+        }
+        percentVec.push_back(percent);
         i++;
+    }
+    for (int j = 0; j < i; j++) {
+        print_progress_bar(percentVec[j], j, par_vec, longest);
     }
 }
 
@@ -346,14 +361,14 @@ void draw_budget()
 /* Sets up and draws the main table based on which vector is passed */
 void setup_menu(std::vector<std::string> &par_vec)
 {
-    clearRefresh();
+    clear_refresh();
     draw_header(par_vec);
-    draw_budget();
     if (par_vec.size() == allEntriesSpaces.size()) {
         calculate_money_left_over(allEntries);
     } else if (par_vec.size() == foundEntries.size()) {
         calculate_money_left_over_specific(allEntries);
     } else {
+        draw_budget(par_vec);
         calculate_money_left_over_month(allEntries, month);
     }
 
@@ -363,31 +378,28 @@ void setup_menu(std::vector<std::string> &par_vec)
     std::ostringstream ss;
     ss << amount;
     std::string amountString(ss.str());
-    if (!(amountString.find('.') != std::string::npos)) {
-        amountString += ".00";
-    }
+    add_trailing_zeros(amountString);
     std::string print = "Balance: $" + amountString;
     mvprintw(numEntries + 5, 1, print.c_str());
-//    draw_budget();
     while(true) {
         curs_set(0);
         menuInitilization(par_vec, 1, 4, 0);
         switch (keyPress) {
         case KEY_N:
-            clearRefresh();
+            clear_refresh();
             addEntry();
         case KEY_X:
             removeEntry();
-            setup_menu(allEntriesSpaces);
+            setup_menu(specificMonthEntries);
         case KEY_BACKSLASH:
             find_entry();
             break;
-        case KEY_F:
-            filter_results();
+        case KEY_A:
+            setup_menu(allEntriesSpaces);
         case KEY_B:
             init_budget();
-        case KEY_ESCAPE:
-            setup_menu(allEntriesSpaces);
+        case KEY_M:
+            setup_menu(specificMonthEntries);
         case KEY_Q:
             endwin();
             exit(1);
@@ -396,27 +408,19 @@ void setup_menu(std::vector<std::string> &par_vec)
 }
 
 /* REMOVE NUMENTRIES FROM THIS */
-void filter_results()
+void current_month_entries()
 {
-    clearRefresh();
-    mvprintw(0, 1, "Which month would you like to see?");
-    highlight = 0;
-    amount = 0;
-    while (true) {
-        menuInitilization(months, 1, 2, 1);
-        switch (keyPress) {
-        case KEY_L:
-            month = highlight + 1;
-            specificMonthEntries.clear();
-            for (auto entry : allEntriesSpaces) {
-                if (get_month(entry) == month) {
-                    specificMonthEntries.push_back(entry);
-                    numEntries++;
-                }
-            }
-    setup_menu(specificMonthEntries);
+    fill_all_entries_no_spaces();
+    clear_refresh();
+    month = get_current_month();
+    specificMonthEntries.clear();
+    for (auto entry : allEntriesSpaces) {
+        if (get_month(entry) == month) {
+            specificMonthEntries.push_back(entry);
+            numEntries++;
         }
     }
+    setup_menu(specificMonthEntries);
 }
 
 /* REMOVE NUMENTRIES FROM THIS */
@@ -441,7 +445,7 @@ void find_entry()
         mvprintw(row - 2, 1, "No results were found");
         attroff(A_BOLD);
     } else {
-        clearRefresh();
+        clear_refresh();
     }
     /* Why is the call to draw_header here???? */
     draw_header(foundEntries);
@@ -453,18 +457,16 @@ void find_entry()
 
 /* Try changing calculate_money_left_over to .find("Debit") instead of calling get_type so that it can be done on any vector (this needs to be done so that the calculate_money_left_over can be called on the vectors with spaces, this will decrease the amount of if statements needed to filter down allEntries to just what is inside of specificMonthEntries or foundEntries. This will also clean up the code a lot and remove bloat. Just remove all of the get functions all together, or change them to do .find() instead */
 
-/* Make a add_decimal_point function since decimal points are added with a simple if statement atleast 3 times in the program )the amount category, Balance:, and in the budget) */
-
 /* Change the default view to be of the current month, have a button to click to show ALL entries. The user wants to see the current month more than they do all entries */
 int main()
 {
     write_database_to_vector();
-    clearRefresh();
+    clear_refresh();
     /* Sets up ncurses */
     initscr();
     setlocale(LC_ALL, "");
     cbreak();
     noecho();
     keypad(stdscr, true);
-    setup_menu(allEntriesSpaces);
+    current_month_entries();
 }

@@ -1,20 +1,24 @@
 #include <iostream>
 #include <vector>
+#include <sstream>
 #include <ncurses.h>
 
 #include "get.h"
 #include "file.h"
 
-extern int longestDate;
-extern int longestType;
-extern int longestCategory;
-extern int longestAmount;
-extern int longestDescription;
+int longestDate;
+int longestType;
+int longestCategory;
+int longestAmount;
+int longestDescription;
 extern int numEntries;
 extern int amount;
 extern std::vector<std::string> allEntries;
 extern std::vector<std::string> allEntriesSpaces;
 extern std::vector<std::string> specificMonthEntries;
+
+template <typename T>
+std::string to_string_with_precision(const T a_value, const int n = 6);
 
 void find_longest(int par_month = 0)
 {
@@ -78,8 +82,8 @@ int get_number_of_entries(std::vector<std::string> &par_vec)
 
 void fill_all_entries_no_spaces()
 {
-    find_longest();
     allEntriesSpaces.clear();
+    find_longest();
     int print = 2;
     std::string pushBack;
     amount = 0;
@@ -99,6 +103,34 @@ void fill_all_entries_no_spaces()
     }
 }
 
+void print_progress_bar(float percent, int i, std::vector<std::string> par_vec, int length)
+{
+    std::string print = " [";
+    std::string percentString;
+    float percent_ = percent / 10;
+    if (percent_ > 10) {
+        percent_ = 10;
+    }
+    std::istringstream line(to_string_with_precision(percent_, 2));
+    std::getline(line, percentString, '.');
+    /* Change 20 to a paramter */
+    int hash = (stof(percentString) * 2);
+    for (int i = 0; i < hash; i++) {
+        print += "#";
+    }
+    add_space_after(print, 20 - hash);
+
+    /* These are seperate because an error was made when they were together */
+    print += "] ";
+    print += "[" + to_string_with_precision(percent, 2) + "%]";
+
+    if (par_vec.size() == allEntriesSpaces.size()) {
+        mvprintw(i + 9 + allEntriesSpaces.size(), length + 1, print.c_str());
+    } else {
+        mvprintw(i + 9 + specificMonthEntries.size(), length + 1, print.c_str());
+    }
+}
+
 /* Change this to all be dynamic for code readability (Change the first 2 printings of the bars) */
 void draw_header(std::vector<std::string> &par_vec)
 {
@@ -106,7 +138,7 @@ void draw_header(std::vector<std::string> &par_vec)
     int print = 12;
     fill_all_entries_no_spaces();
     /* Keybinds */
-    mvprintw(0, 1, "q = Quit; n = New Entry; x = Remove Selected Entry; f = Filter Results; b = Set Budget; / = Search");
+    mvprintw(0, 1, "q = Quit; m = Main Menu; n = New Entry; x = Remove Selected Entry; a = Show all results; b = Set Budget; / = Search");
     /* Header */
     mvprintw(2, 1, "Date");
     mvprintw(3, 1, "----------");

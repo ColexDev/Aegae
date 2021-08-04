@@ -86,14 +86,39 @@ std::string get_description(std::string &par_line)
     return description;
 }
 
+// Get the date and time
+std::string get_current_date()
+{
+    std::time_t _time;
+    std::tm* timeinfo;
+    char time[80];
+    std::time(&_time); // get time -> store in address
+    timeinfo = std::localtime(&_time); // address to struct rep
+    std::strftime(time, 80 ,"%m-%d-%Y", timeinfo); // format time to `time`
+    std::string __time(time); // convert char[] -> std::string
+    return __time;
+}
+
+int get_current_month()
+{
+    std::string date = get_current_date();
+    std::string month;
+    std::istringstream ss_line(date);
+    std::getline(ss_line, month, '-');
+    int month_ = stoi(month);
+    return month_;
+}
+
 /* Try to remove entry.find() incase one of the category words
    is in a description */
-float get_amount_category(std::string &par_category)
+float get_amount_category(std::string &par_category, int type = 0)
 {
     float amount = 0.0;
     for (auto entry : allEntries) {
-        if (entry.find(par_category) != std::string::npos) {
-            amount += get_amount_line_float(entry);
+        if ((get_month(entry) == get_current_month()) || type == 1) {
+            if (entry.find(par_category) != std::string::npos) {
+                amount += get_amount_line_float(entry);
+            }
         }
     }
     return amount;
@@ -121,17 +146,4 @@ float get_amount_total(const int par_MONTH, const std::string par_TYPE, const st
 
     std::string numAmount {std::to_string(amount)};
     return amount;
-}
-
-// Get the date and time
-std::string get_current_date()
-{
-    std::time_t _time;
-    std::tm* timeinfo;
-    char time[80];
-    std::time(&_time); // get time -> store in address
-    timeinfo = std::localtime(&_time); // address to struct rep
-    std::strftime(time, 80 ,"%m-%d-%Y", timeinfo); // format time to `time`
-    std::string __time(time); // convert char[] -> std::string
-    return __time;
 }
