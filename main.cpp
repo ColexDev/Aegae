@@ -45,8 +45,10 @@ int longestAmount;
 int longestDescription;
 int numEntries = 0;
 float amount = 0;
+
 /* remove this from global variables */
 std::string token;
+
 char token_[80];
 Entry entry;
 const std::vector<std::string> CHOICES_TYPE {"Income", "Expense", "Loan", "Debt"};
@@ -71,6 +73,15 @@ void clearRefresh()
 {
     wclear(stdscr);
     wrefresh(stdscr);
+}
+
+template <typename T>
+std::string to_string_with_precision(const T a_value, const int n = 6)
+{
+    std::ostringstream out;
+    out.precision(n);
+    out << std::fixed << a_value;
+    return out.str();
 }
 
 /* Initilizes a menu either horizonatally or vertically. This NEEDS to be run in a while loop */
@@ -146,7 +157,7 @@ void getSetAmount()
     std::string str2 = str;
     if (str2.find(".") != std::string::npos) {
     } else {
-        str2 = str2 + ".00";
+        str2 += ".00";
     }
     entry.setAmount(str2);
     noecho();
@@ -318,9 +329,15 @@ void draw_budget()
         std::string category = CHOICES_CATEGORY_EXPENSE[i];
         float amount = get_amount_category(category);
         float percent = (amount / stof(line)) * 100;
-        std::string print = category + ": " + std::to_string(amount) + " / " + line + " [" + std::to_string(percent) + "%]";
+        attron(A_BOLD);
+        mvprintw(allEntries.size() + 7, 1, "Your budget for (insert month) is:");
+        attroff(A_BOLD);
+        if (!(line.find('.') != std::string::npos)) {
+            line += ".00";
+        }
+        std::string print = category + ": " + to_string_with_precision(amount, 2) + " / " + line + " [" + to_string_with_precision(percent, 2) + "%]";
         /* unhardcode i + 12 */
-        mvprintw(i + 12, 1, print.c_str());
+        mvprintw(i + allEntries.size() + 9 , 1, print.c_str());
         i++;
     }
 }
@@ -346,6 +363,9 @@ void setup_menu(std::vector<std::string> &par_vec)
     std::ostringstream ss;
     ss << amount;
     std::string amountString(ss.str());
+    if (!(amountString.find('.') != std::string::npos)) {
+        amountString += ".00";
+    }
     std::string print = "Balance: $" + amountString;
     mvprintw(numEntries + 5, 1, print.c_str());
 //    draw_budget();
@@ -432,6 +452,10 @@ void find_entry()
 /* Add budget for each category, show if going over the budget in reports section. Display a notification to check reports on main page if going over budget. Show budget/spending for each category in reports */
 
 /* Try changing calculate_money_left_over to .find("Debit") instead of calling get_type so that it can be done on any vector (this needs to be done so that the calculate_money_left_over can be called on the vectors with spaces, this will decrease the amount of if statements needed to filter down allEntries to just what is inside of specificMonthEntries or foundEntries. This will also clean up the code a lot and remove bloat. Just remove all of the get functions all together, or change them to do .find() instead */
+
+/* Make a add_decimal_point function since decimal points are added with a simple if statement atleast 3 times in the program )the amount category, Balance:, and in the budget) */
+
+/* Change the default view to be of the current month, have a button to click to show ALL entries. The user wants to see the current month more than they do all entries */
 int main()
 {
     write_database_to_vector();

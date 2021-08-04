@@ -94,7 +94,6 @@ float get_amount_category(std::string &par_category)
     for (auto entry : allEntries) {
         if (entry.find(par_category) != std::string::npos) {
             amount += get_amount_line_float(entry);
-            mvprintw(25, 25, "hello");
         }
     }
     return amount;

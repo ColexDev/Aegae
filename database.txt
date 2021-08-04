@@ -1,4 +1,0 @@
-Expense, Food, $55.00, test, 08-01-2021,
-Income, Salary, $4500.00, Paid, 08-01-2021,
-Expense, Transportation, $500.00, New Tires, 08-01-2021,
-Expense, Entertainment, $45.00, Went to the movies, 07-23-2021,
