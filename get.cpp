@@ -12,11 +12,9 @@ std::string get_date(std::string &par_line)
 {
     std::string date;
     std::istringstream ss_line(par_line);
-    std::getline(ss_line, date, ',');
-    std::getline(ss_line, date, ',');
-    std::getline(ss_line, date, ',');
-    std::getline(ss_line, date, ',');
-    std::getline(ss_line, date, ',');
+    for (int i = 0; i < 5; i++) {
+        std::getline(ss_line, date, ',');
+    }
     return date;
 }
 
@@ -34,12 +32,13 @@ float get_amount_line_float(std:: string &par_line)
 {
     std::istringstream ss_line(par_line);
     std::string amount;
-    std::getline(ss_line, amount, ',');
-    std::getline(ss_line, amount, ',');
-    std::getline(ss_line, amount, ',');
+    for (int i = 0; i < 3; i++) {
+        std::getline(ss_line, amount, ',');
+    }
     std::istringstream ss_amount(amount);
-    std::getline(ss_amount, amount, '$');
-    std::getline(ss_amount, amount, '$');
+    for (int i = 0; i < 2; i++) {
+        std::getline(ss_amount, amount, '$');
+    }
     return stof(amount);
 }
 // REMOVE THIS AND MAKE 1 FUNCTION / TEMPLATE FOR BOTH TYPES
@@ -47,12 +46,13 @@ std::string get_amount_line_string(std:: string &par_line)
 {
     std::istringstream ss_line(par_line);
     std::string amount;
-    std::getline(ss_line, amount, ',');
-    std::getline(ss_line, amount, ',');
-    std::getline(ss_line, amount, ',');
+    for (int i = 0; i < 3; i++) {
+        std::getline(ss_line, amount, ',');
+    }
     std::istringstream ss_amount(amount);
-    std::getline(ss_amount, amount, '$');
-    std::getline(ss_amount, amount, '$');
+    for (int i = 0; i < 2; i++) {
+        std::getline(ss_amount, amount, '$');
+    }
     return amount;
 }
 
@@ -69,8 +69,9 @@ std::string get_category(std::string &par_line)
 {
     std::string category;
     std::istringstream ss_line(par_line);
-    std::getline(ss_line, category, ',');
-    std::getline(ss_line, category, ',');
+    for (int i = 0; i < 2; i++) {
+        std::getline(ss_line, category, ',');
+    }
     return category;
 }
 
@@ -79,10 +80,9 @@ std::string get_description(std::string &par_line)
 {
     std::string description;
     std::istringstream ss_line(par_line);
-    std::getline(ss_line, description, ',');
-    std::getline(ss_line, description, ',');
-    std::getline(ss_line, description, ',');
-    std::getline(ss_line, description, ',');
+    for (int i = 0; i < 4; i++) {
+        std::getline(ss_line, description, ',');
+    }
     return description;
 }
 
