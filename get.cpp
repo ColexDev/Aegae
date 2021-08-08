@@ -5,7 +5,6 @@
 #include <vector>
 #include <ncurses.h>
 
-extern std::string token;
 extern std::vector<std::string> allEntries;
 
 std::string get_date(std::string &par_line)
@@ -21,6 +20,7 @@ std::string get_date(std::string &par_line)
 // RETURNS THE MONTH (1, 2, 3, ETC)
 int get_month(std::string &par_line)
 {
+    std::string token;
     std::string date = get_date(par_line);
     std::istringstream ss_token(date);
     std::getline(ss_token, token, '-' );

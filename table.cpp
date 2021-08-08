@@ -3,6 +3,7 @@
 #include <sstream>
 #include <ncurses.h>
 
+#include "utils.h"
 #include "get.h"
 #include "file.h"
 
@@ -16,9 +17,6 @@ extern int amount;
 extern std::vector<std::string> allEntries;
 extern std::vector<std::string> allEntriesSpaces;
 extern std::vector<std::string> specificMonthEntries;
-
-template <typename T>
-std::string to_string_with_precision(const T a_value, const int n = 6);
 
 void find_longest(int par_month = 0)
 {
@@ -118,11 +116,13 @@ void print_progress_bar(float percent, int i, std::vector<std::string> par_vec, 
     for (int i = 0; i < hash; i++) {
         print += "#";
     }
-    add_space_after(print, 20 - hash);
+    for (int i = 0; i < (20 - hash); i++) {
+        print += "-";
+    }
 
     /* These are seperate because an error was made when they were together */
     print += "] ";
-    print += "[" + to_string_with_precision(percent, 2) + "%]";
+    print += "[" + to_string_with_precision(percent) + "%]";
 
     if (par_vec.size() == allEntriesSpaces.size()) {
         mvprintw(i + 9 + allEntriesSpaces.size(), length + 1, print.c_str());
@@ -138,7 +138,7 @@ void draw_header(std::vector<std::string> &par_vec)
     int print = 12;
     fill_all_entries_no_spaces();
     /* Keybinds */
-    mvprintw(0, 1, "q = Quit; m = Main Menu; n = New Entry; x = Remove Selected Entry; a = Show all results; b = Set Budget; / = Search");
+    mvprintw(0, 1, "q = Quit; a = Show All Results; m = Main Menu; n = New Entry; x = Remove Selected Entry; b = Set Budget; / = Search");
     /* Header */
     mvprintw(2, 1, "Date");
     mvprintw(3, 1, "----------");

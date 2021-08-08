@@ -5,12 +5,14 @@
 #include <vector>
 #include <sstream>
 
+#include "utils.h"
 #include "get.h"
 #include "file.h"
 #include "table.h"
 #include "def.h"
+#include "budget.h"
 
-// Entry class for storing temp values
+/* Entry class for storing temp values */
 class Entry
 {
 private:
@@ -41,10 +43,9 @@ int highlight = 0;
 int numEntries = 0;
 float amount = 0;
 
-/* remove this from global variables */
-std::string token;
+/* This being global allows the correct balance to show when searching entires, fix this to make it local */
+char token[80];
 
-char token_[80];
 Entry entry;
 const std::vector<std::string> CHOICES_TYPE {"Income", "Expense", "Loan", "Debt"};
 const std::vector<std::string> CHOICES_VIEW_ENTRY {"All", "Specific"};
@@ -61,32 +62,11 @@ const std::vector<std::string> months {"January", "Feburary", "March", "April", 
 /* Function forward declarations*/
 int main();
 void find_entry();
-void addEntry();
+void add_entry();
 
-void clear_refresh()
-{
-    wclear(stdscr);
-    wrefresh(stdscr);
-}
-
-void add_trailing_zeros(std::string &str)
-{
-    if (!(str.find(".") != std::string::npos)) {
-        str += ".00";
-    }
-}
-
-template <typename T>
-std::string to_string_with_precision(const T a_value, const int n = 6)
-{
-    std::ostringstream out;
-    out.precision(n);
-    out << std::fixed << a_value;
-    return out.str();
-}
 
 /* Initilizes a menu either horizonatally or vertically. This NEEDS to be run in a while loop */
-void menuInitilization(const std::vector<std::string> &par_ARRCHOICE, int par_direction, int par_xStart, int par_yStart)
+void menu_initilization(const std::vector<std::string> &par_ARRCHOICE, int par_direction, int par_xStart, int par_yStart)
 {
     int size = par_ARRCHOICE.size();
     /* The array is printed, if i == highlight that item will be highlighted */
@@ -119,7 +99,7 @@ void menuInitilization(const std::vector<std::string> &par_ARRCHOICE, int par_di
 }
 
 /* Removes a selected entry from the database file */
-void removeEntry()
+void remove_entry()
 {
     std::ifstream database("database.txt");
     std::string line;
@@ -131,7 +111,7 @@ void removeEntry()
             eraseLine = line;
             /* Asks for deletion confirmation */
             attron(A_BOLD);
-            mvwprintw(stdscr, allEntries.size() + 5, 0, "Are you sure you want to DELETE this entry? [Y/n]");
+            mvwprintw(stdscr, allEntries.size() + 5, 1, "Are you sure you want to DELETE this entry? [Y/n]");
             attroff(A_BOLD);
             keyPress = getch();
             if (keyPress == KEY_Y) {
@@ -146,7 +126,7 @@ void removeEntry()
 }
 
 // This does too much based off its name
-void getSetAmount()
+void get_set_amount()
 {
     std::ofstream outputFile("tempFile");
     std::ifstream inputFile("database.txt", std::fstream::app);
@@ -186,22 +166,22 @@ void getSetAmount()
 }
 
 /* Make both setCategory functions into 1 */
-void setCategoryIncome()
+void set_category_income()
 {
     highlight = 0;
     entry.setType("Income");
     while(true) {
         clear_refresh();
         mvwprintw(stdscr, 0, 1, "What was it from ");
-        menuInitilization(CHOICES_CATEGORY_INCOME, 1, 2, 1);
+        menu_initilization(CHOICES_CATEGORY_INCOME, 1, 2, 1);
         switch(keyPress) {
             case KEY_L:
                 entry.setCategory(CHOICES_CATEGORY_INCOME[highlight]);
                 clear_refresh();
-                getSetAmount();
+                get_set_amount();
             case KEY_H:
                 clear_refresh();
-                addEntry();
+                add_entry();
             case KEY_Q:
                 endwin();
                 exit(1);
@@ -209,23 +189,23 @@ void setCategoryIncome()
     }
 }
 
-void setCategoryExpense()
+void set_category_expense()
 {
     highlight = 0;
     entry.setType("Expense");
     while(true) {
         clear_refresh();
         mvwprintw(stdscr, 0, 1, "What was it spent on: ");
-        menuInitilization(CHOICES_CATEGORY_EXPENSE, 1, 2, 1);
+        menu_initilization(CHOICES_CATEGORY_EXPENSE, 1, 2, 1);
         switch(keyPress) {
             case KEY_L:
                 entry.setCategory(CHOICES_CATEGORY_EXPENSE[highlight]);
                 clear_refresh();
-                getSetAmount();
+                get_set_amount();
                 break;
             case KEY_H:
                 clear_refresh();
-                addEntry();
+                add_entry();
             case KEY_Q:
                 endwin();
                 exit(1);
@@ -233,19 +213,19 @@ void setCategoryExpense()
     }
 }
 
-void addEntry()
+void add_entry()
 {
     highlight = 0;
     while(true) {
         mvwprintw(stdscr, 0, 1, "Please Select the Category: ");
-        menuInitilization(CHOICES_TYPE, 1, 2, 1);
+        menu_initilization(CHOICES_TYPE, 1, 2, 1);
         switch(keyPress) {
             case KEY_L:
                 clear_refresh();
                 if(CHOICES_TYPE[highlight] == "Expense") {
-                    setCategoryExpense();
+                    set_category_expense();
                 } else if (CHOICES_TYPE[highlight] == "Income") {
-                    setCategoryIncome();
+                    set_category_income();
                 }
             case KEY_H:
                 main();
@@ -289,71 +269,13 @@ void calculate_money_left_over_specific(std::vector<std::string> &par_vec)
 {
     amount = 0;
     for (auto entry : par_vec) {
-        if (entry.find(token_) != std::string::npos) {
+        if (entry.find(token) != std::string::npos) {
             if (get_type(entry) == "Expense") {
                 amount-= get_amount_line_float(entry);
             } else {
                 amount+= get_amount_line_float(entry);
             }
         }
-    }
-}
-
-void init_budget()
-{
-    clear_refresh();
-    remove("budget.txt");
-    std::fstream budgetFile("budget.txt", std::fstream::app);
-    int i = 0;
-    echo();
-    for (auto category : CHOICES_CATEGORY_EXPENSE) {
-        std::string print = "What is your budget for " + category + ": $";
-        mvprintw(i, 0, "%s", print.c_str());
-        char str[80];
-        getstr(str);
-        std::string str2 = str;
-        budgetFile << str2 << '\n';
-        i++;
-    }
-    noecho();
-}
-
-
-void draw_budget(std::vector<std::string> &par_vec)
-{
-    std::vector<float> percentVec;
-    std::fstream budgetFile("budget.txt");
-    std::string line;
-    int i = 0;
-    float percent = 0;
-    float amount = 0;
-    int longest = 0;
-    int temp = 0;
-    while (std::getline(budgetFile, line)) {
-        std::string category = CHOICES_CATEGORY_EXPENSE[i];
-        if (par_vec.size() == allEntriesSpaces.size()) {
-            amount = get_amount_category(category, 1);
-        } else {
-            amount = get_amount_category(category);
-        }
-        percent = (amount / stof(line)) * 100;
-        attron(A_BOLD);
-        std::string print_ = "Your budget for " + months[get_current_month() - 1] + " is:";
-        mvprintw(allEntries.size() + 6, 1, print_.c_str());
-        attroff(A_BOLD);
-        add_trailing_zeros(line);
-        std::string print = category + ": " + to_string_with_precision(amount, 2) + " / " + line;
-        /* unhardcode i + 12 */
-        mvprintw(i + allEntries.size() + 8 , 1, print.c_str());
-        temp = print.length();
-        if (temp > longest) {
-            longest = temp;
-        }
-        percentVec.push_back(percent);
-        i++;
-    }
-    for (int j = 0; j < i; j++) {
-        print_progress_bar(percentVec[j], j, par_vec, longest);
     }
 }
 
@@ -368,7 +290,7 @@ void setup_menu(std::vector<std::string> &par_vec)
     } else if (par_vec.size() == foundEntries.size()) {
         calculate_money_left_over_specific(allEntries);
     } else {
-        draw_budget(par_vec);
+        draw_budget(specificMonthEntries);
         calculate_money_left_over_month(allEntries, month);
     }
 
@@ -383,13 +305,13 @@ void setup_menu(std::vector<std::string> &par_vec)
     mvprintw(numEntries + 5, 1, print.c_str());
     while(true) {
         curs_set(0);
-        menuInitilization(par_vec, 1, 4, 0);
+        menu_initilization(par_vec, 1, 4, 0);
         switch (keyPress) {
         case KEY_N:
             clear_refresh();
-            addEntry();
+            add_entry();
         case KEY_X:
-            removeEntry();
+            remove_entry();
             setup_menu(specificMonthEntries);
         case KEY_BACKSLASH:
             find_entry();
@@ -432,10 +354,10 @@ void find_entry()
     mvprintw(row - 1, 1, "/");
     echo();
     move(row - 1, 2);
-    getstr(token_);
+    getstr(token);
     noecho();
     for (auto entry : allEntriesSpaces) {
-        if (entry.find(token_) != std::string::npos) {
+        if (entry.find(token) != std::string::npos) {
             numEntries++;
             foundEntries.push_back(entry);
         }
@@ -453,11 +375,10 @@ void find_entry()
     setup_menu(foundEntries);
 }
 
-/* Add budget for each category, show if going over the budget in reports section. Display a notification to check reports on main page if going over budget. Show budget/spending for each category in reports */
 
 /* Try changing calculate_money_left_over to .find("Debit") instead of calling get_type so that it can be done on any vector (this needs to be done so that the calculate_money_left_over can be called on the vectors with spaces, this will decrease the amount of if statements needed to filter down allEntries to just what is inside of specificMonthEntries or foundEntries. This will also clean up the code a lot and remove bloat. Just remove all of the get functions all together, or change them to do .find() instead */
 
-/* Change the default view to be of the current month, have a button to click to show ALL entries. The user wants to see the current month more than they do all entries */
+/* right align the Amount category items */
 int main()
 {
     write_database_to_vector();
