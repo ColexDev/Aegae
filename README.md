@@ -17,6 +17,4 @@ $ ./Corcyra
 
 ## TODO
 - Finish refactoring code base
-- Allow the user to exit at ANY time by pressing 'q' (ALMOST DONE)
 - Allow the user to go back at any time by pressing 'h'
-- Finish the Reports section
