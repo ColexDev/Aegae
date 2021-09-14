@@ -67,4 +67,3 @@ void draw_budget(std::vector<std::string> &par_vec)
         print_progress_bar(percentVec[j], j + 2, par_vec, longest);
     }
 }
-

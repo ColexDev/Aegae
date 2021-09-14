@@ -40,7 +40,6 @@ public:
 int keyPress;
 int month;
 int highlight = 0;
-int numEntries = 0;
 float amount = 0;
 
 /* This being global allows the correct balance to show when searching entires, fix this to make it local */
@@ -54,16 +53,15 @@ std::vector<std::string> foundEntries;
 std::vector<std::string> budget;
 std::vector<std::string> allEntriesSpaces;
 std::vector<std::string> specificMonthEntries;
+const std::vector<std::string> months {"January", "Feburary", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
 /* Edit the two below to add/delete category options */
 const std::vector<std::string> CHOICES_CATEGORY_EXPENSE {"Food", "Transportation", "Entertainment", "Misc"};
 const std::vector<std::string> CHOICES_CATEGORY_INCOME {"Salary", "Sale", "Gift", "Misc"};
-const std::vector<std::string> months {"January", "Feburary", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
 
 /* Function forward declarations*/
 int main();
 void find_entry();
 void add_entry();
-
 
 /* Initilizes a menu either horizonatally or vertically. This NEEDS to be run in a while loop */
 void menu_initilization(const std::vector<std::string> &par_ARRCHOICE, int par_direction, int par_xStart, int par_yStart)
@@ -165,7 +163,6 @@ void get_set_amount()
     main();
 }
 
-/* Make both setCategory functions into 1 */
 void set_category_income()
 {
     highlight = 0;
@@ -202,7 +199,6 @@ void set_category_expense()
                 entry.setCategory(CHOICES_CATEGORY_EXPENSE[highlight]);
                 clear_refresh();
                 get_set_amount();
-                break;
             case KEY_H:
                 clear_refresh();
                 add_entry();
@@ -238,7 +234,18 @@ void add_entry()
     }
 }
 
-/* make all of these into 1 */
+void calculate_money_left_over(std::vector<std::string> &par_vec)
+{
+    amount = 0;
+    for (auto entry : par_vec) {
+        if (get_type(entry) == "Expense") {
+            amount-= get_amount_line_float(entry);
+        } else {
+            amount+= get_amount_line_float(entry);
+        }
+    }
+}
+
 void calculate_money_left_over_month(std::vector<std::string> &par_vec, int par_month)
 {
     amount = 0;
@@ -253,17 +260,6 @@ void calculate_money_left_over_month(std::vector<std::string> &par_vec, int par_
     }
 }
 
-void calculate_money_left_over(std::vector<std::string> &par_vec)
-{
-    amount = 0;
-    for (auto entry : par_vec) {
-        if (get_type(entry) == "Expense") {
-            amount-= get_amount_line_float(entry);
-        } else {
-            amount+= get_amount_line_float(entry);
-        }
-    }
-}
 
 void calculate_money_left_over_specific(std::vector<std::string> &par_vec)
 {
@@ -279,7 +275,6 @@ void calculate_money_left_over_specific(std::vector<std::string> &par_vec)
     }
 }
 
-/* Try replacing specificMonthEntriesw with allEntriesSpaces and just rewriting to it everytime */
 /* Sets up and draws the main table based on which vector is passed */
 void setup_menu(std::vector<std::string> &par_vec)
 {
@@ -293,16 +288,13 @@ void setup_menu(std::vector<std::string> &par_vec)
         draw_budget(specificMonthEntries);
         calculate_money_left_over_month(allEntries, month);
     }
-
-    /* Just fucking get rid of numEntries from the entire program */
-    numEntries = par_vec.size();
     highlight = 0;
     std::ostringstream ss;
     ss << amount;
     std::string amountString(ss.str());
     add_trailing_zeros(amountString);
     std::string print = "Balance: $" + amountString;
-    mvprintw(numEntries + 5, 1, print.c_str());
+    mvprintw(par_vec.size() + 5, 1, print.c_str());
     while(true) {
         curs_set(0);
         menu_initilization(par_vec, 1, 4, 0);
@@ -329,7 +321,6 @@ void setup_menu(std::vector<std::string> &par_vec)
     }
 }
 
-/* REMOVE NUMENTRIES FROM THIS */
 void current_month_entries()
 {
     fill_all_entries_no_spaces();
@@ -339,17 +330,17 @@ void current_month_entries()
     for (auto entry : allEntriesSpaces) {
         if (get_month(entry) == month) {
             specificMonthEntries.push_back(entry);
-            numEntries++;
         }
     }
     setup_menu(specificMonthEntries);
 }
 
-/* REMOVE NUMENTRIES FROM THIS */
+/* when setup menu is run with foundEntires, pressing M does not bring back to main menu */
 void find_entry()
 {
     foundEntries.clear();
     int row, col;
+    int numEntries = 0;
     getmaxyx(stdscr, row, col);
     mvprintw(row - 1, 1, "/");
     echo();
@@ -370,11 +361,9 @@ void find_entry()
         clear_refresh();
     }
     /* Why is the call to draw_header here???? */
-    draw_header(foundEntries);
-    highlight = 0;
+    clear_refresh();
     setup_menu(foundEntries);
 }
-
 
 /* Try changing calculate_money_left_over to .find("Debit") instead of calling get_type so that it can be done on any vector (this needs to be done so that the calculate_money_left_over can be called on the vectors with spaces, this will decrease the amount of if statements needed to filter down allEntries to just what is inside of specificMonthEntries or foundEntries. This will also clean up the code a lot and remove bloat. Just remove all of the get functions all together, or change them to do .find() instead */
 
