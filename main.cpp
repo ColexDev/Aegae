@@ -4,6 +4,8 @@
 #include <fstream>
 #include <vector>
 #include <sstream>
+#include <ctype.h>
+#include <string.h>
 
 #include "utils.h"
 #include "get.h"
@@ -62,6 +64,7 @@ const std::vector<std::string> CHOICES_CATEGORY_INCOME {"Salary", "Sale", "Gift"
 int main();
 void find_entry();
 void add_entry();
+
 
 /* Initilizes a menu either horizonatally or vertically. This NEEDS to be run in a while loop */
 void menu_initilization(const std::vector<std::string> &par_ARRCHOICE, int par_direction, int par_xStart, int par_yStart)
@@ -123,7 +126,7 @@ void remove_entry()
     }
 }
 
-// This does too much based off its name
+// This does too much based off its name and is horribly written, fix it
 void get_set_amount()
 {
     std::ofstream outputFile("tempFile");
@@ -343,9 +346,11 @@ void find_entry()
     int numEntries = 0;
     getmaxyx(stdscr, row, col);
     mvprintw(row - 1, 1, "/");
-    echo();
     move(row - 1, 2);
+    echo();
+    curs_set(1);
     getstr(token);
+    curs_set(0);
     noecho();
     for (auto entry : allEntriesSpaces) {
         if (entry.find(token) != std::string::npos) {
@@ -368,6 +373,8 @@ void find_entry()
 /* Try changing calculate_money_left_over to .find("Debit") instead of calling get_type so that it can be done on any vector (this needs to be done so that the calculate_money_left_over can be called on the vectors with spaces, this will decrease the amount of if statements needed to filter down allEntries to just what is inside of specificMonthEntries or foundEntries. This will also clean up the code a lot and remove bloat. Just remove all of the get functions all together, or change them to do .find() instead */
 
 /* right align the Amount category items */
+/* IF THERE IS NOTHING FROM PREVIOUS MONTHS THE BUDGET WON'T SHOW LMAO */
+/* Balance is being calculated using all entries in the main menu IF there is nothing in the current month */
 int main()
 {
     write_database_to_vector();
@@ -377,6 +384,6 @@ int main()
     setlocale(LC_ALL, "");
     cbreak();
     noecho();
-    keypad(stdscr, true);
+    keypad(stdscr, TRUE);
     current_month_entries();
 }

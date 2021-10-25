@@ -144,7 +144,7 @@ void draw_header(std::vector<std::string> &par_vec)
     mvprintw(3, 1, "----------");
     mvprintw(2, print + 1, "Type");
     print = print + longestType + 3;
-    mvprintw(3, 13, "------");
+    mvprintw(3, 13, "-------");
     mvprintw(2, print, "Category");
 
     print2 = print;
