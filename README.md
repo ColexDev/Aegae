@@ -16,7 +16,7 @@ $ ./Corcyra
 ```
 
 ## Example
-![image](https://colex.dev/corcyra_example.png)
+![image](https://colex.dev/imgs/corcyra_example.png)
 
 ## TODO
 - Finish refactoring code base
