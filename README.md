@@ -15,6 +15,9 @@ $ make
 $ ./Corcyra
 ```
 
+## Example
+![image](https://colex.dev/corcyra_example.png)
+
 ## TODO
 - Finish refactoring code base
 - Allow the user to go back at any time by pressing 'h'
